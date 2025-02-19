@@ -1,0 +1,342 @@
+Using pre-set license
+Built from 'trunk' branch; Version is '6000.0.3f1 (019aa96b6ed9) revision 105129'; Using compiler version '193933522'; Build Type 'Release'
+OS: 'Windows 10  (10.0.19045) 64bit Professional' Language: 'ru' Physical Memory: 32690 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 1
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.0.3f1\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker4
+-projectPath
+E:/UnityProject/Mobile_Test
+-logFile
+Logs/AssetImportWorker4.log
+-srvPort
+61618
+-job-worker-count
+7
+-background-job-worker-count
+8
+-asset-garbage-collectors
+1
+Successfully changed project path to: E:/UnityProject/Mobile_Test
+E:/UnityProject/Mobile_Test
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [1748]  Target information:
+
+Player connection [1748]  * "[IP] 192.168.0.104 [Port] 0 [Flags] 2 [Guid] 2196365463 [EditorId] 2196365463 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-78H6MG7) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [1748]  * "[IP] 192.168.175.1 [Port] 0 [Flags] 2 [Guid] 2196365463 [EditorId] 2196365463 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-78H6MG7) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [1748]  * "[IP] 192.168.240.1 [Port] 0 [Flags] 2 [Guid] 2196365463 [EditorId] 2196365463 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-78H6MG7) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [1748] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [1748] Host joined alternative multi-casting on [225.0.0.222:34997]...
+JobSystem: Creating JobQueue using job-worker-count value 7
+Library Redirect Path: Library/
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+Refreshing native plugins compatible for Editor in 2.87 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.0.3f1 (019aa96b6ed9)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path E:/UnityProject/Mobile_Test/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: AMD Radeon R7 200 Series (ID=0x6610)
+    Vendor:   ATI
+    VRAM:     1004 MB
+    Driver:   27.20.1034.6
+Shader Hidden/ProbeVolume/VoxelizeScene is not supported: GPU does not support conservative rasterization
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56448
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/PlaybackEngines/MetroSupport/UnityEditor.UWP.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.0.3f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.005227 seconds.
+- Loaded All Assemblies, in  0.316 seconds
+Native extension for Android target not found
+Android Extension - Scanning For ADB Devices 246 ms
+Native extension for UWP target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.600 seconds
+Domain Reload Profiling: 914ms
+	BeginReloadAssembly (103ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1ms)
+	RebuildCommonClasses (29ms)
+	RebuildNativeTypeToScriptingClass (10ms)
+	initialDomainReloadingComplete (44ms)
+	LoadAllAssembliesAndSetupDomain (127ms)
+		LoadAssemblies (101ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (124ms)
+			TypeCache.Refresh (123ms)
+				TypeCache.ScanAssembly (112ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (0ms)
+	FinalizeReload (600ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (554ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (339ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (4ms)
+			ProcessInitializeOnLoadAttributes (85ms)
+			ProcessInitializeOnLoadMethodAttributes (122ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+========================================================================
+Worker process is ready to serve import requests
+Import Worker Mode flag is 0x00
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.817 seconds
+Refreshing native plugins compatible for Editor in 2.41 ms, found 4 plugins.
+Native extension for Android target not found
+Native extension for UWP target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Mono: successfully reloaded assembly
+Package Manager log level set to [2]
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+- Finished resetting the current domain, in  0.763 seconds
+Domain Reload Profiling: 1576ms
+	BeginReloadAssembly (312ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (5ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (30ms)
+	RebuildCommonClasses (29ms)
+	RebuildNativeTypeToScriptingClass (10ms)
+	initialDomainReloadingComplete (33ms)
+	LoadAllAssembliesAndSetupDomain (429ms)
+		LoadAssemblies (287ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (224ms)
+			TypeCache.Refresh (157ms)
+				TypeCache.ScanAssembly (141ms)
+			BuildScriptInfoCaches (56ms)
+			ResolveRequiredComponents (9ms)
+	FinalizeReload (763ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (574ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (20ms)
+			SetLoadedEditorAssemblies (3ms)
+			BeforeProcessingInitializeOnLoad (60ms)
+			ProcessInitializeOnLoadAttributes (337ms)
+			ProcessInitializeOnLoadMethodAttributes (147ms)
+			AfterProcessingInitializeOnLoad (6ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (6ms)
+Shader Hidden/ProbeVolume/VoxelizeScene is not supported: GPU does not support conservative rasterization
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Refreshing native plugins compatible for Editor in 2.44 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 140 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6848 unused Assets / (7.7 MB). Loaded Objects now: 7490.
+Memory consumption went from 183.7 MB to 176.0 MB.
+Total: 10.601000 ms (FindLiveObjects: 0.759600 ms CreateObjectMapping: 0.796300 ms MarkObjects: 5.878900 ms  DeleteObjects: 3.165700 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 207995.491498 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/вход/забыл(-а) пароль.png
+  artifactKey: Guid(f4e981e26b414c24db925b4e8357f5a0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/вход/забыл(-а) пароль.png using Guid(f4e981e26b414c24db925b4e8357f5a0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '707bec473b806605a7b1f95466ebe6be') in 0.0970262 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 19
+
+========================================================================
+Received Import Request.
+  Time since last request: 247.285927 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости
+  artifactKey: Guid(de18d57cd07d0094ba6ca20b50175bc7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости using Guid(de18d57cd07d0094ba6ca20b50175bc7) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: 'd8655c4eb198b7b0f80f953dbdc3a45f') in 0.0004536 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.047727 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/_время и дата.png
+  artifactKey: Guid(4235096ed2944d04393c8c940bf0263a) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/_время и дата.png using Guid(4235096ed2944d04393c8c940bf0263a) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '0b0e6d0e1353c41fc67deb6ce9f74d67') in 0.0267331 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 13
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.020536 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/затемнение верх.png
+  artifactKey: Guid(9103216f0c693b64d888d4b423c1e4b0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/затемнение верх.png using Guid(9103216f0c693b64d888d4b423c1e4b0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '0d7108d68f7fc15e4733c798f0521a0f') in 0.0166064 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/иконка настройки.png
+  artifactKey: Guid(87350729c96f9b045b03a02ee29124af) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/иконка настройки.png using Guid(87350729c96f9b045b03a02ee29124af) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: 'a9cd02508f6fb4e002d5cf7bfedb8998') in 0.0157903 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000030 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/пост.png
+  artifactKey: Guid(8340a0b959b510241abfe71fcc8337ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/пост.png using Guid(8340a0b959b510241abfe71fcc8337ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '005e3b668ccca82ea5d327f014069be3') in 0.033911 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/стрелка вправо.png
+  artifactKey: Guid(f0bede8f82fef744ea7c9c2b4d7b1151) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/стрелка вправо.png using Guid(f0bede8f82fef744ea7c9c2b4d7b1151) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '2dc643ffccfab11a66ce05ad194850a0') in 0.0089722 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000017 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/фон для текста.png
+  artifactKey: Guid(bf134b86cc572d842a5d8ca66b92e318) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/фон для текста.png using Guid(bf134b86cc572d842a5d8ca66b92e318) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '8255fccda2b0ca3566d2175f39207a45') in 0.0101247 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/фотка группы.png
+  artifactKey: Guid(ee917df25bc251e4981b1bdb47d1600c) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/фотка группы.png using Guid(ee917df25bc251e4981b1bdb47d1600c) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: 'd1680c87fb3a98ed9994c5cda4ec51d5') in 0.0101114 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000014 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/иконка уведы.png
+  artifactKey: Guid(dee6d11a60aaf5e4db48b4983788a2d9) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/иконка уведы.png using Guid(dee6d11a60aaf5e4db48b4983788a2d9) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: 'b40437d56a9312b59156eac6003073c6') in 0.0084269 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000011 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/иконка чаты.png
+  artifactKey: Guid(407de660e4f77324383c0527b7258437) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/иконка чаты.png using Guid(407de660e4f77324383c0527b7258437) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '27671b5ff36ea9371a1c2b41f2b588ae') in 0.0085056 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000019 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/кнопка еще.png
+  artifactKey: Guid(fcfbd8ca84ea05e4ca93c2f65741e8f0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/кнопка еще.png using Guid(fcfbd8ca84ea05e4ca93c2f65741e8f0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: 'b402ea66688f4651c8785433ecb5bbd6') in 0.013804 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 7
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000010 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/Текст текст текст текст текст текс т....png
+  artifactKey: Guid(195295c3ec6f25c4fad7ff3c3073ebf4) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/Текст текст текст текст текст текс т....png using Guid(195295c3ec6f25c4fad7ff3c3073ebf4) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: 'c5896d2b5f01dc8937775782d1358ad4') in 0.0480349 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 35
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.441058 seconds.
+  path: Assets/2 варик — копия/спрайты 18.02/новости/шапка.png
+  artifactKey: Guid(13a00091f04f6044ea0b4373d6d765c8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/2 варик — копия/спрайты 18.02/новости/шапка.png using Guid(13a00091f04f6044ea0b4373d6d765c8) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter)[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+[PhysX] Initialized MultithreadedTaskDispatcher with 8 workers.
+ -> (artifact id: '735d9c59d5d8f90ea2e94d7a8a9c8ea3') in 0.0305034 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 11
+
+Editor requested this worker to shutdown with reason: Scaling down because of idle timeout
+AssetImportWorker is now disconnected from the server
+Process exiting
+Exiting without the bug reporter. Application will terminate with return code 0
