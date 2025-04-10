@@ -36,3 +36,14 @@ The following packages were added:
   com.unity.modules.vr@1.0.0
   com.unity.modules.wind@1.0.0
   com.unity.modules.accessibility@1.0.0
+
+=== Wed Feb 19 20:44:52 2025
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were added:
+  com.unity.multiplayer.center@1.0.0
+The following packages were updated:
+  com.unity.inputsystem from version 1.11.1 to 1.13.0
+  com.unity.visualscripting from version 1.9.4 to 1.9.5

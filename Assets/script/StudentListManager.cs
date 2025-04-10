@@ -42,7 +42,7 @@ public class StudentListManager : MonoBehaviour
             Text studentText = studentUI.GetComponentInChildren<Text>();
 
             // Формируем строку с данными студента
-            string studentInfo = $"{student.Id} {student.First} {student.Last} {student.Second}";
+            string studentInfo = $"ID: {student.Id}, Имя: {student.First}, Фамилия: {student.Last}, Отчество: {student.Second}";
 
             // Устанавливаем текст
             studentText.text = studentInfo;
