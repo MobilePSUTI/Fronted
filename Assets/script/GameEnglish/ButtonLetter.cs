@@ -1,46 +1,47 @@
-// ButtonLetter.cs
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
 public class ButtonLetter : MonoBehaviour
 {
-    public char letter; // Буква остаётся в том регистре, в котором задана в инспекторе
+    public char letter;
     private Button button;
     private Image buttonImage;
-    private Color originalColor;
-    public Color pressedColor = Color.green;
-    public float colorChangeDuration = 0.3f;
+    public Sprite pressedSprite;   // Изображение при нажатии
+    private Sprite normalSprite;   // Исходное изображение кнопки
+    public float changeDuration = 0.3f; // Длительность смены спрайта
 
     private void Awake()
     {
         button = GetComponent<Button>();
         buttonImage = GetComponent<Image>();
-        originalColor = buttonImage.color;
+        normalSprite = buttonImage.sprite; // Сохраняем исходный спрайт
 
         button.onClick.AddListener(OnButtonClick);
 
-        // Устанавливаем текст кнопки без изменения регистра
+        // Устанавливаем текст кнопки
         Text buttonText = GetComponentInChildren<Text>();
         if (buttonText != null)
         {
-            buttonText.text = letter.ToString(); // Убираем ToUpper()
+            buttonText.text = letter.ToString();
         }
     }
 
     private void OnButtonClick()
     {
-        // Меняем цвет кнопки
-        StartCoroutine(ChangeButtonColor());
-
-        // Отправляем нажатую букву игроку (без изменения регистра)
+        StartCoroutine(ChangeButtonSprite());
         PlayerController.Instance.OnKeyboardKeyPressed(letter);
     }
 
-    private IEnumerator ChangeButtonColor()
+    private IEnumerator ChangeButtonSprite()
     {
-        buttonImage.color = pressedColor;
-        yield return new WaitForSeconds(colorChangeDuration);
-        buttonImage.color = originalColor;
+        // Меняем спрайт на нажатый
+        buttonImage.sprite = pressedSprite;
+
+        // Ждем указанное время
+        yield return new WaitForSeconds(changeDuration);
+
+        // Возвращаем исходный спрайт
+        buttonImage.sprite = normalSprite;
     }
 }

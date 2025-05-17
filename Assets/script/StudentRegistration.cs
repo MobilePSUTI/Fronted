@@ -3,11 +3,12 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
-using MySqlConnector;
-using System.IO;
+using System;
+using UnityEngine.EventSystems;
 
 public class StudentRegistration : MonoBehaviour
 {
+    [Header("UI Elements")]
     public InputField emailInput;
     public InputField passwordInput;
     public InputField firstNameInput;
@@ -16,47 +17,192 @@ public class StudentRegistration : MonoBehaviour
     public Dropdown groupDropdown;
     public Text errorText;
     public GameObject loadingIndicator;
-
-    // Аватарка
     public GameObject registrationPanel;
     public GameObject avatarSelectionPanel;
     public Image[] avatarOptions;
     public Image selectedAvatarImage;
+
+    [Header("UI Adjustment")]
+    public RectTransform registrationContentPanel; // Панель с полями ввода
+    public ScrollRect scrollRect; // Опционально, если используется ScrollRect
+    public float keyboardPadding = 10f; // Отступ от клавиатуры
+
+    [Header("Settings")]
+    public int maxAvatarSize = 512;
+
     private int selectedAvatarIndex = -1;
     private Texture2D[] avatarTextures;
-
-    private DatabaseManager databaseManager;
+    //private FirebaseDBManager firebaseManager;
     private List<Group> groups;
+    private bool isKeyboardVisible = false;
+    private Vector2 originalContentPosition;
 
     void Start()
     {
-        databaseManager = gameObject.AddComponent<DatabaseManager>();
-        databaseManager.Initialize("localhost", "psuti_app", "developer", "developer_password");
-        StartCoroutine(LoadGroups());
+        Debug.Log("[StudentRegistration] Start called");
 
-        // Инициализация панели выбора аватара
+        // Ищем существующий FirebaseDBManager
+        //firebaseManager = FirebaseDBManager.Instance;
+        //if (firebaseManager == null)
+        //{
+        //    Debug.LogError("[StudentRegistration] FirebaseDBManager instance not found!");
+        //    // Если экземпляр не найден, можно создать новый, но это не должно быть необходимо
+        //    GameObject firebaseObj = new GameObject("FirebaseDBManager");
+        //    firebaseManager = firebaseObj.AddComponent<FirebaseDBManager>();
+        //    _ = firebaseManager.Initialize();
+        //}
+        //else
+        //{
+        //    Debug.Log("[StudentRegistration] FirebaseDBManager instance found");
+        //}
+
+        // Проверка UI элементов
+        if (emailInput == null) Debug.LogError("[StudentRegistration] emailInput is null");
+        if (passwordInput == null) Debug.LogError("[StudentRegistration] passwordInput is null");
+        if (firstNameInput == null) Debug.LogError("[StudentRegistration] firstNameInput is null");
+        if (lastNameInput == null) Debug.LogError("[StudentRegistration] lastNameInput is null");
+        if (secondNameInput == null) Debug.LogError("[StudentRegistration] secondNameInput is null");
+        if (groupDropdown == null) Debug.LogError("[StudentRegistration] groupDropdown is null");
+        if (errorText == null) Debug.LogError("[StudentRegistration] errorText is null");
+        if (loadingIndicator == null) Debug.LogError("[StudentRegistration] loadingIndicator is null");
+        if (registrationPanel == null) Debug.LogError("[StudentRegistration] registrationPanel is null");
+        if (avatarSelectionPanel == null) Debug.LogError("[StudentRegistration] avatarSelectionPanel is null");
+        if (avatarOptions == null || avatarOptions.Length == 0) Debug.LogError("[StudentRegistration] avatarOptions is null or empty");
+        if (selectedAvatarImage == null) Debug.LogError("[StudentRegistration] selectedAvatarImage is null");
+        if (registrationContentPanel == null) Debug.LogError("[StudentRegistration] registrationContentPanel is null");
+
         avatarSelectionPanel.SetActive(false);
+        errorText.text = "";
+
+        if (registrationContentPanel == null && registrationPanel != null)
+        {
+            registrationContentPanel = registrationPanel.GetComponent<RectTransform>();
+        }
+        originalContentPosition = registrationContentPanel != null ?
+            registrationContentPanel.anchoredPosition : Vector2.zero;
+
+        SetupInputFields();
+        //StartCoroutine(LoadGroups());
         LoadAvatarOptions();
+
+        Debug.Log("[StudentRegistration] Start completed");
+    }
+
+    void Update()
+    {
+#if UNITY_ANDROID || UNITY_IOS
+        // Проверка состояния клавиатуры
+        if (TouchScreenKeyboard.visible != isKeyboardVisible)
+        {
+            isKeyboardVisible = TouchScreenKeyboard.visible;
+            if (!isKeyboardVisible)
+            {
+                ResetContentPosition();
+            }
+        }
+#endif
+    }
+
+    void SetupInputFields()
+    {
+        // Настройка событий для всех полей ввода
+        InputField[] allInputs = GetComponentsInChildren<InputField>(true);
+        foreach (InputField input in allInputs)
+        {
+            // Добавляем EventTrigger если его нет
+            EventTrigger trigger = input.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = input.gameObject.AddComponent<EventTrigger>();
+            }
+
+            // Создаем запись для события выбора
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.Select;
+            entry.callback.AddListener((data) => { OnInputSelected(input); });
+            trigger.triggers.Add(entry);
+
+            // Оставляем onEndEdit как есть
+            input.onEndEdit.AddListener((text) => OnInputDeselected(input));
+            input.shouldHideMobileInput = false;
+        }
+    }
+
+    void OnInputSelected(InputField input)
+    {
+        AdjustForKeyboard(input);
+    }
+
+    void OnInputDeselected(InputField input)
+    {
+        ResetContentPosition();
+    }
+
+    void AdjustForKeyboard(InputField input)
+    {
+        if (input == null || registrationContentPanel == null) return;
+
+        Canvas.ForceUpdateCanvases();
+
+        // Получаем позицию поля ввода
+        RectTransform inputRect = input.GetComponent<RectTransform>();
+        Vector2 inputPosition = (Vector2)inputRect.transform.position;
+
+        // Вычисляем смещение
+        float keyboardHeight = GetKeyboardHeight();
+        float canvasHeight = GetComponent<RectTransform>().rect.height;
+        float inputBottom = inputPosition.y - inputRect.rect.height / 2;
+        float visiblePosition = canvasHeight - keyboardHeight - keyboardPadding;
+
+        if (inputBottom < visiblePosition)
+        {
+            float adjustment = visiblePosition - inputBottom;
+            registrationContentPanel.anchoredPosition += new Vector2(0, adjustment);
+        }
+    }
+
+    void ResetContentPosition()
+    {
+        if (registrationContentPanel != null)
+        {
+            registrationContentPanel.anchoredPosition = originalContentPosition;
+        }
+    }
+
+    float GetKeyboardHeight()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        using (AndroidJavaClass UnityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject View = UnityClass.GetStatic<AndroidJavaObject>("currentActivity")
+                .Get<AndroidJavaObject>("mUnityPlayer").Call<AndroidJavaObject>("getView");
+            using (AndroidJavaObject rect = new AndroidJavaObject("android.graphics.Rect"))
+            {
+                View.Call("getWindowVisibleDisplayFrame", rect);
+                return Screen.height - rect.Call<int>("height");
+            }
+        }
+#elif UNITY_IOS && !UNITY_EDITOR
+        return TouchScreenKeyboard.area.height;
+#else
+        return 300; // Примерная высота для редактора
+#endif
     }
 
     void LoadAvatarOptions()
     {
-        // Загрузка доступных аватарок из Resources
         avatarTextures = Resources.LoadAll<Texture2D>("Avatars");
 
-        // Проверка, что текстуры загружены и доступны для чтения
         if (avatarTextures == null || avatarTextures.Length == 0)
         {
             Debug.LogError("Не удалось загрузить текстуры аватаров");
             return;
         }
 
-        // Настройка отображения вариантов аватарок
         for (int i = 0; i < avatarOptions.Length; i++)
         {
             if (i < avatarTextures.Length)
             {
-                // Проверяем, что текстура доступна для чтения
                 if (avatarTextures[i] == null || !avatarTextures[i].isReadable)
                 {
                     Debug.LogError($"Текстура аватара {i} не доступна для чтения");
@@ -64,11 +210,12 @@ public class StudentRegistration : MonoBehaviour
                 }
 
                 int index = i;
-                avatarOptions[i].sprite = Sprite.Create(avatarTextures[i],
+                avatarOptions[i].sprite = Sprite.Create(
+                    avatarTextures[i],
                     new Rect(0, 0, avatarTextures[i].width, avatarTextures[i].height),
-                    new Vector2(0.5f, 0.5f));
+                    new Vector2(0.5f, 0.5f)
+                );
 
-                // Добавляем обработчик клика
                 Button btn = avatarOptions[i].GetComponent<Button>();
                 btn.onClick.AddListener(() => SelectAvatar(index));
             }
@@ -82,90 +229,93 @@ public class StudentRegistration : MonoBehaviour
     void SelectAvatar(int index)
     {
         selectedAvatarIndex = index;
-        selectedAvatarImage.sprite = Sprite.Create(avatarTextures[index],
+        selectedAvatarImage.sprite = Sprite.Create(
+            avatarTextures[index],
             new Rect(0, 0, avatarTextures[index].width, avatarTextures[index].height),
-            new Vector2(0.5f, 0.5f));
+            new Vector2(0.5f, 0.5f)
+        );
     }
 
-    IEnumerator LoadGroups()
-    {
-        if (loadingIndicator != null)
-            loadingIndicator.SetActive(true);
+    //IEnumerator LoadGroups()
+    //{
+    //    if (loadingIndicator != null)
+    //        loadingIndicator.SetActive(true);
 
-        errorText.text = "";
-        groupDropdown.ClearOptions();
-        groupDropdown.interactable = false;
+    //    errorText.text = "";
+    //    groupDropdown.ClearOptions();
+    //    groupDropdown.interactable = false;
 
-        if (!databaseManager.Connect())
-        {
-            errorText.text = "Ошибка подключения к базе данных.";
-            if (loadingIndicator != null)
-                loadingIndicator.SetActive(false);
-            yield break;
-        }
+    //    var task = firebaseManager.GetAllGroups();
+    //    yield return new WaitUntil(() => task.IsCompleted);
 
-        groups = databaseManager.GetAllGroups();
-        databaseManager.Disconnect();
+    //    if (task.IsFaulted)
+    //    {
+    //        errorText.text = "Ошибка загрузки групп";
+    //        Debug.LogError("Failed to load groups: " + task.Exception);
+    //        yield break;
+    //    }
 
-        // Добавляем placeholder первым элементом
-        groupDropdown.options.Add(new Dropdown.OptionData("Выберите группу"));
+    //    groups = task.Result;
 
-        if (groups != null && groups.Count > 0)
-        {
-            foreach (var group in groups)
-            {
-                groupDropdown.options.Add(new Dropdown.OptionData(group.Title));
-            }
-            groupDropdown.interactable = true;
-        }
-        else
-        {
-            errorText.text = "Не удалось загрузить список групп.";
-        }
+    //    groupDropdown.options.Add(new Dropdown.OptionData("Выберите группу"));
+    //    groups.Sort((a, b) => a.Title.CompareTo(b.Title));
 
-        groupDropdown.value = 0;
-        groupDropdown.RefreshShownValue();
+    //    if (groups.Count > 0)
+    //    {
+    //        foreach (var group in groups)
+    //        {
+    //            groupDropdown.options.Add(new Dropdown.OptionData(group.Title));
+    //        }
+    //        groupDropdown.interactable = true;
+    //    }
+    //    else
+    //    {
+    //        errorText.text = "Нет доступных групп";
+    //        Debug.LogWarning("No groups available in database");
+    //    }
 
-        if (loadingIndicator != null)
-            loadingIndicator.SetActive(false);
-    }
+    //    groupDropdown.value = 0;
+    //    groupDropdown.RefreshShownValue();
+
+    //    if (loadingIndicator != null)
+    //        loadingIndicator.SetActive(false);
+    //}
 
     public void OnRegisterButtonClick()
+    {
+        string error = ValidateFields();
+        if (!string.IsNullOrEmpty(error))
+        {
+            errorText.text = error;
+            return;
+        }
+
+        registrationPanel.SetActive(false);
+        avatarSelectionPanel.SetActive(true);
+        errorText.text = "";
+    }
+
+    private string ValidateFields()
     {
         string email = emailInput.text.Trim();
         string password = passwordInput.text.Trim();
         string firstName = firstNameInput.text.Trim();
         string lastName = lastNameInput.text.Trim();
-        string secondName = secondNameInput.text.Trim();
 
         if (groupDropdown.options.Count == 0 || groupDropdown.value < 0)
-        {
-            errorText.text = "Необходимо выбрать группу.";
-            return;
-        }
+            return "Необходимо выбрать группу.";
 
         if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) ||
             string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
-        {
-            errorText.text = "Все обязательные поля должны быть заполнены.";
-            return;
-        }
+            return "Все обязательные поля должны быть заполнены.";
+
         if (groupDropdown.value == 0)
-        {
-            errorText.text = "Необходимо выбрать группу.";
-            return;
-        }
+            return "Необходимо выбрать группу.";
 
         if (!IsValidEmail(email))
-        {
-            errorText.text = "Введите корректный email адрес.";
-            return;
-        }
+            return "Введите корректный email адрес.";
 
-        // Переход к выбору аватара вместо немедленной регистрации
-        registrationPanel.SetActive(false);
-        avatarSelectionPanel.SetActive(true);
-        errorText.text = "";
+        return null;
     }
 
     public void OnConfirmAvatarButtonClick()
@@ -176,7 +326,6 @@ public class StudentRegistration : MonoBehaviour
             return;
         }
 
-        // Проверяем, что группы загружены и выбрана валидная группа
         if (groups == null || groups.Count == 0 || groupDropdown.value <= 0)
         {
             errorText.text = "Необходимо выбрать группу.";
@@ -184,14 +333,12 @@ public class StudentRegistration : MonoBehaviour
             return;
         }
 
-        // Получаем данные из полей ввода
         string email = emailInput.text.Trim();
         string password = passwordInput.text.Trim();
         string firstName = firstNameInput.text.Trim();
         string lastName = lastNameInput.text.Trim();
         string secondName = secondNameInput.text.Trim();
 
-        // Получаем ID группы (учитываем, что первый элемент - placeholder)
         int selectedGroupIndex = groupDropdown.value - 1;
         if (selectedGroupIndex < 0 || selectedGroupIndex >= groups.Count)
         {
@@ -200,12 +347,81 @@ public class StudentRegistration : MonoBehaviour
             return;
         }
 
-        int groupId = groups[selectedGroupIndex].Id;
+        string groupId = groups[selectedGroupIndex].Id;
 
-        // Конвертируем аватар в байты
-        byte[] avatarBytes = avatarTextures[selectedAvatarIndex].EncodeToPNG();
+        Texture2D selectedTexture = avatarTextures[selectedAvatarIndex];
+        Texture2D resizedTexture = ResizeTexture(selectedTexture, maxAvatarSize, maxAvatarSize);
+        byte[] avatarBytes = resizedTexture.EncodeToPNG();
 
-        StartCoroutine(RegisterStudent(email, password, firstName, lastName, secondName, groupId, avatarBytes));
+        //StartCoroutine(RegisterStudent(email, password, firstName, lastName, secondName, groupId, avatarBytes));
+    }
+
+    private Texture2D ResizeTexture(Texture2D source, int newWidth, int newHeight)
+    {
+        source.filterMode = FilterMode.Bilinear;
+        RenderTexture rt = RenderTexture.GetTemporary(newWidth, newHeight);
+        rt.filterMode = FilterMode.Bilinear;
+        RenderTexture.active = rt;
+        Graphics.Blit(source, rt);
+
+        Texture2D result = new Texture2D(newWidth, newHeight);
+        result.ReadPixels(new Rect(0, 0, newWidth, newHeight), 0, 0);
+        result.Apply();
+
+        RenderTexture.ReleaseTemporary(rt);
+        return result;
+    }
+
+    //IEnumerator RegisterStudent(string email, string password, string firstName,
+    //    string lastName, string secondName, string groupId, byte[] avatarBytes)
+    //{
+    //    if (loadingIndicator != null)
+    //        loadingIndicator.SetActive(true);
+
+    //    bool success = false;
+    //    string error = "";
+
+    //    var registerTask = firebaseManager.RegisterStudent(
+    //        email, password, firstName, lastName, secondName, groupId, avatarBytes);
+    //    yield return new WaitUntil(() => registerTask.IsCompleted);
+
+    //    if (registerTask.IsFaulted)
+    //    {
+    //        error = "Ошибка соединения";
+    //    }
+    //    else
+    //    {
+    //        success = registerTask.Result;
+    //        error = success ? "" : "Ошибка регистрации";
+    //    }
+
+    //    if (!string.IsNullOrEmpty(error))
+    //    {
+    //        errorText.text = error;
+    //        // Возвращаем пользователя на панель ввода данных
+    //        avatarSelectionPanel.SetActive(false);
+    //        registrationPanel.SetActive(true);
+    //    }
+    //    else if (success)
+    //    {
+    //        SceneManager.LoadScene("MainScene");
+    //    }
+
+    //    if (loadingIndicator != null)
+    //        loadingIndicator.SetActive(false);
+    //}
+
+    public void OnBackButtonClick()
+    {
+        if (avatarSelectionPanel.activeSelf)
+        {
+            avatarSelectionPanel.SetActive(false);
+            registrationPanel.SetActive(true);
+        }
+        else
+        {
+            SceneManager.LoadScene("MainScene");
+        }
     }
 
     private bool IsValidEmail(string email)
@@ -218,75 +434,6 @@ public class StudentRegistration : MonoBehaviour
         catch
         {
             return false;
-        }
-    }
-
-    IEnumerator RegisterStudent(string email, string password,string firstName, string lastName, string secondName, int groupId, byte[] avatar_path)
-    {
-        if (loadingIndicator != null)
-            loadingIndicator.SetActive(true);
-
-        bool registrationSuccess = false;
-        string errorMessage = string.Empty;
-
-        try
-        {
-            if (!databaseManager.Connect())
-            {
-                errorMessage = "Ошибка подключения к базе данных.";
-                yield break;
-            }
-
-            // Проверка существования email
-            bool emailExists = databaseManager.CheckEmailExists(email);
-
-            if (emailExists)
-            {
-                errorMessage = "Пользователь с таким email уже существует.";
-                yield break;
-            }
-
-            // Регистрация нового студента с аватаром
-            registrationSuccess = databaseManager.RegisterNewStudent(email, password, firstName, lastName, secondName, groupId, avatar_path);
-        }
-        catch (MySqlException ex)
-        {
-            errorMessage = "Ошибка при регистрации: " + ex.Message;
-        }
-        finally
-        {
-            databaseManager.Disconnect();
-        }
-
-        if (!string.IsNullOrEmpty(errorMessage))
-        {
-            errorText.text = errorMessage;
-        }
-        else if (registrationSuccess)
-        {
-            errorText.text = "Регистрация успешна!";
-            yield return new WaitForSeconds(1.5f);
-            SceneManager.LoadScene("MainScene");
-        }
-        else
-        {
-            errorText.text = "Ошибка при регистрации.";
-        }
-
-        if (loadingIndicator != null)
-            loadingIndicator.SetActive(false);
-    }
-
-    public void OnBackButtonClick()
-    {
-        if (avatarSelectionPanel.activeSelf)
-        {
-            avatarSelectionPanel.SetActive(false);
-            registrationPanel.SetActive(true);
-        }
-        else
-        {
-            SceneManager.LoadScene("MainScene");
         }
     }
 }

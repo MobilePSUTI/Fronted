@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 935e78e34cdc91f48ab91257eb8aaf0d
+guid: 047789b200f6d7140b471393b6411b57
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -113,6 +113,32 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -272,7 +298,13 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      "01_00 \u043A\u0440\u0430\u0441\u043D\u044B\u0439_0": 5605919089823564105
+      "01_00 \u043A\u0440\u0430\u0441\u043D\u044B\u0439_1": -128211665372240086
+      "01_00 \u043A\u0440\u0430\u0441\u043D\u044B\u0439_2": 6148985503653883590
+      "01_00 \u043A\u0440\u0430\u0441\u043D\u044B\u0439_3": -8117850521231697401
+      "01_00 \u043A\u0440\u0430\u0441\u043D\u044B\u0439_4": -2752536230093142478
+      "01_00 \u043A\u0440\u0430\u0441\u043D\u044B\u0439_5": -6538776828938641830
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

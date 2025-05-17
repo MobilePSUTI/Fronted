@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 
 [System.Serializable]
 public class VKResponse
@@ -53,74 +53,124 @@ public class VKGroup
 {
     public long id;
     public string name;
-    public string screen_name;
-    public int is_closed;
-    public string type;
-    public string photo_50;
-    public string photo_100;
     public string photo_200;
 }
 
 public class VKNewsLoad : MonoBehaviour
 {
-    public string accessToken = "2e1a194f2e1a194f2e1a194f0d2d3078ac22e1a2e1a194f49ac02415f6ad1570cce36f8"; // Ваш токен доступа ВКонтакте
-    public List<int> groupIds = new List<int> { 78711199, 188328031, 17785357 }; // ID групп
+    // Embedded VK settings
+    [SerializeField] private string accessToken = "2e1a194f2e1a194f2e1a194f0d2d3078ac22e1a2e1a194f49ac02415f6ad1570cce36f8"; // Set your VK API access token here
+    [SerializeField] private List<int> groupIds = new List<int> { 78711199, 188328031, 17785357 };
 
-    public List<Post> allPosts = new List<Post>(); // Список всех постов
-    public Dictionary<long, VKGroup> groupDictionary = new Dictionary<long, VKGroup>(); // Словарь групп
+    public List<Post> allPosts = new List<Post>();
+    public Dictionary<long, VKGroup> groupDictionary = new Dictionary<long, VKGroup>();
+    private const int MaxRetries = 3;
+    private const float RetryDelayBase = 1f;
 
-    public IEnumerator GetNewsFromVK(int offset = 0, int count = 100) // Загружаем сразу все новости
+    private void OnValidate()
     {
+        if (string.IsNullOrEmpty(accessToken))
+            Debug.LogWarning("[VKNewsLoad] AccessToken is empty. Please set a valid VK API access token in the Inspector.");
+        if (groupIds == null || groupIds.Count == 0)
+            Debug.LogWarning("[VKNewsLoad] GroupIds list is empty. Please add valid VK group IDs in the Inspector.");
+    }
+
+    public IEnumerator GetNewsFromVK(int offset = 0, int count = 20)
+    {
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            Debug.LogError("[VKNewsLoad] AccessToken is missing");
+            yield break;
+        }
+
+        if (groupIds == null || groupIds.Count == 0)
+        {
+            Debug.LogError("[VKNewsLoad] No GroupIds specified");
+            yield break;
+        }
+
         allPosts.Clear();
         groupDictionary.Clear();
 
-        foreach (var groupId in groupIds)
+        foreach (int groupId in groupIds)
         {
-            // Формируем URL для запроса к API ВКонтакте
-            string url = $"https://api.vk.com/method/wall.get?owner_id=-{groupId}&access_token={accessToken}&v=5.199&count={count}&offset={offset}&extended=1";
-            UnityWebRequest request = UnityWebRequest.Get(url);
-            yield return request.SendWebRequest();
+            bool success = false;
+            for (int attempt = 1; attempt <= MaxRetries; attempt++)
+            {
+                string url = $"https://api.vk.com/method/wall.get?owner_id=-{groupId}&access_token={accessToken}&v=5.199&count={count}&offset={offset}&extended=1";
+                using UnityWebRequest request = UnityWebRequest.Get(url);
+                request.timeout = 10;
 
-            if (request.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError("Ошибка: " + request.error);
+                Debug.Log($"[VKNews] Fetching news for group {groupId}, attempt {attempt}");
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Debug.Log($"[VKNews] Received response for group {groupId}");
+                    ProcessNews(request.downloadHandler.text);
+                    success = true;
+                    break;
+                }
+
+                Debug.LogWarning($"[VKNews] Attempt {attempt} failed for group {groupId}: {request.error}");
+                if (attempt < MaxRetries)
+                    yield return new WaitForSeconds(RetryDelayBase * attempt);
             }
-            else
-            {
-                // Обрабатываем полученные данные
-                ProcessNews(request.downloadHandler.text);
-            }
+
+            if (!success)
+                Debug.LogError($"[VKNews] Failed to fetch news for group {groupId} after {MaxRetries} attempts");
         }
 
-        // Сортируем посты по дате (от новых к старым)
-        allPosts.Sort((post1, post2) => post2.date.CompareTo(post1.date));
+        allPosts.RemoveAll(post => !IsValidDate(post.date));
+        allPosts.Sort((a, b) => b.date.CompareTo(a.date));
+        Debug.Log($"[VKNews] Loaded {allPosts.Count} posts from {groupDictionary.Count} groups");
     }
 
-    public void ProcessNews(string json)
+    private void ProcessNews(string json)
     {
         if (string.IsNullOrEmpty(json))
         {
-            Debug.LogError("JSON ответ пуст или равен null.");
+            Debug.LogError("[VKNews] JSON response is empty");
             return;
         }
 
-        // Парсим JSON
-        var response = JsonUtility.FromJson<VKResponse>(json);
-
-        if (response?.response?.items == null || response.response.groups == null)
+        try
         {
-            Debug.LogError("Неверный JSON ответ или пустые данные.");
-            return;
-        }
-
-        // Добавляем посты и группы в кэш
-        allPosts.AddRange(response.response.items);
-        foreach (var group in response.response.groups)
-        {
-            if (!groupDictionary.ContainsKey(group.id))
+            var response = JsonUtility.FromJson<VKResponse>(json);
+            if (response?.response?.items == null || response.response.groups == null)
             {
-                groupDictionary.Add(group.id, group);
+                Debug.LogError($"[VKNews] Invalid JSON response: {json}");
+                return;
             }
+
+            foreach (var post in response.response.items)
+            {
+                if (post == null || !IsValidDate(post.date)) continue;
+                allPosts.Add(post);
+            }
+
+            foreach (var group in response.response.groups)
+            {
+                if (group != null && !groupDictionary.ContainsKey(group.id))
+                    groupDictionary.Add(group.id, group);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[VKNews] Error processing news: {ex.Message}\nJSON: {json}");
+        }
+    }
+
+    private bool IsValidDate(long unixSeconds)
+    {
+        try
+        {
+            DateTimeOffset.FromUnixTimeSeconds(unixSeconds);
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

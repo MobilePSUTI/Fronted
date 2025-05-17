@@ -70,8 +70,8 @@
     "m_ScreenCaptureSettings": {
         "Mode": 0,
         "m_LastSaveLocation": [
-            "E:\\UnityProject\\Mobile_Test",
-            "E:\\UnityProject\\Mobile_Test"
+            "D:\\Fronted_Firebase",
+            "D:\\Fronted_Firebase"
         ]
     },
     "m_QueryLayoutSettings": {
@@ -89,5 +89,5 @@
             "exited": false
         }
     },
-    "m_AutoScroll": 0
+    "m_AutoScroll": 2
 }

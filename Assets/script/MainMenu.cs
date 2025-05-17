@@ -1,138 +1,430 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Collections;
 
 public class MainMenu : MonoBehaviour
 {
-    public GameObject loadingIndicator; // Индикатор загрузки
-    public InputField loginInput; // Поле для ввода логина
-    public InputField passwordInput; // Поле для ввода пароля
-    public Text errorText; // Текст для отображения ошибок
+    [SerializeField] private GameObject loadingIndicator;
+    [SerializeField] private TMP_InputField loginInput;
+    [SerializeField] private TMP_InputField passwordInput;
+    [SerializeField] private TMP_Text errorText;
+    [SerializeField] private RectTransform uiPanel; // Reference to the parent panel or canvas
 
-    private DatabaseManager databaseManager;
+    //private FirebaseDBManager firebaseManager;
+    private bool isNewsLoading;
+    private bool isDestroyed; // Track if the GameObject is destroyed
+    private Vector2 originalPanelPosition;
+    private bool isKeyboardVisible;
+    private float keyboardHeight;
 
-    void Start()
+    private void Awake()
     {
-        databaseManager = gameObject.AddComponent<DatabaseManager>();
-        databaseManager.Initialize("localhost", "psuti_app", "developer", "developer_password"); // Укажите свои параметры
+        // Store the original position of the UI panel
+        if (uiPanel != null)
+            originalPanelPosition = uiPanel.anchoredPosition;
+    }
 
-        // Восстанавливаем данные о текущем пользователе
-        if (UserSession.CurrentStudent != null)
+    private async void Start()
+    {
+        if (!ValidateUIComponents()) return;
+
+
+        var firebaseManagerObject = new GameObject("FirebaseDBManager");
+        //firebaseManager = firebaseManagerObject.AddComponent<FirebaseDBManager>();
+        //DontDestroyOnLoad(firebaseManagerObject);
+
+        //await firebaseManager.Initialize();
+
+        if (UserSession.CurrentUser != null && UserSession.CurrentUser.Role == "student")
         {
-            Debug.Log($"Текущий пользователь: {UserSession.CurrentStudent.Name}");
+            Debug.Log($"[MainMenu] Current user: {UserSession.CurrentUser.Username}");
+            await PreloadStudentDataAsync();
+        }
+
+        // Add listeners for input field focus
+        SetupInputFieldListeners();
+    }
+
+    private void SetupInputFieldListeners()
+    {
+        if (loginInput != null)
+        {
+            loginInput.onSelect.AddListener((string text) => OnInputFieldSelected(loginInput));
+            loginInput.onEndEdit.AddListener((string text) => OnInputFieldDeselected());
+        }
+        if (passwordInput != null)
+        {
+            passwordInput.onSelect.AddListener((string text) => OnInputFieldSelected(passwordInput));
+            passwordInput.onEndEdit.AddListener((string text) => OnInputFieldDeselected());
         }
     }
 
-    public void OnLoginButtonClick()
+    private void OnInputFieldSelected(TMP_InputField inputField)
     {
-        string login = loginInput.text;
-        string password = passwordInput.text;
-
-        if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
+        if (Application.isMobilePlatform)
         {
-            errorText.text = "Логин и пароль не могут быть пустыми.";
-            return;
+            StartCoroutine(AdjustForKeyboard(inputField));
         }
-
-        StartCoroutine(LoginStudent(login, password));
     }
 
-    IEnumerator LoginStudent(string login, string password)
+    private void OnInputFieldDeselected()
     {
-        // Показываем индикатор загрузки
-        if (loadingIndicator != null)
-            loadingIndicator.SetActive(true);
-
-        Debug.Log("Попытка подключения к базе данных...");
-
-        // Подключаемся к базе данных
-        if (!databaseManager.Connect())
+        if (Application.isMobilePlatform && uiPanel != null)
         {
-            Debug.Log("Ошибка подключения к базе данных.");
-            errorText.text = "Ошибка подключения к базе данных.";
+            // Reset panel position when keyboard is hidden
+            uiPanel.anchoredPosition = originalPanelPosition;
+            isKeyboardVisible = false;
+        }
+    }
+
+    private IEnumerator AdjustForKeyboard(TMP_InputField inputField)
+    {
+        // Wait for the keyboard to appear (increased delay for reliability)
+        yield return new WaitForSeconds(0.1f);
+
+        if (!TouchScreenKeyboard.isSupported || !TouchScreenKeyboard.visible)
+        {
+            isKeyboardVisible = false;
+            if (uiPanel != null)
+                uiPanel.anchoredPosition = originalPanelPosition;
             yield break;
         }
 
-        Debug.Log("Проверка логина и пароля...");
+        isKeyboardVisible = true;
 
-        // Аутентифицируем студента
-        Student student;
-        if (databaseManager.AuthenticateStudent(login, password, out student))
+        // Estimate keyboard height (fallback method for better compatibility)
+        float estimatedKeyboardHeight = Screen.height * 0.4f; // Fallback: assume 40% of screen height
+        if (TouchScreenKeyboard.area.height > 0)
         {
-            // Сохраняем данные о студенте в статическом классе
-            UserSession.CurrentStudent = student;
-            Debug.Log($"Студент {student.Name} успешно авторизован.");
-            errorText.text = "";
+            estimatedKeyboardHeight = TouchScreenKeyboard.area.height / CanvasScaleFactor();
+        }
 
-            // Загружаем новости в кэш
-            yield return StartCoroutine(GetNewsFromVK());
+        keyboardHeight = estimatedKeyboardHeight;
 
-            // Переходим на сцену с новостями
-            yield return StartCoroutine(LoadNewsSceneAsync());
+        // Get the input field's position in screen space
+        RectTransform inputRect = inputField.GetComponent<RectTransform>();
+        Vector3[] corners = new Vector3[4];
+        inputRect.GetWorldCorners(corners);
+        float inputFieldBottomY = corners[0].y; // Bottom-left corner in world space
+        float inputFieldHeight = corners[1].y - corners[0].y; // Height of the input field
+
+        // Convert bottom position to screen space
+        Vector2 inputFieldBottomScreenPos = RectTransformUtility.WorldToScreenPoint(null, corners[0]);
+
+        // Calculate the top of the keyboard in screen space
+        float screenHeight = Screen.height;
+        float keyboardTopY = screenHeight - keyboardHeight;
+
+        // Calculate how much the input field is obscured by the keyboard
+        float offset = 0f;
+        if (inputFieldBottomScreenPos.y < keyboardTopY)
+        {
+            // The input field is below the top of the keyboard, so we need to move it up
+            offset = keyboardTopY - inputFieldBottomScreenPos.y + (inputFieldHeight * CanvasScaleFactor()) + 5f; // Add padding
+        }
+
+        // Apply the offset to the UI panel
+        if (uiPanel != null && offset > 0)
+        {
+            Vector2 newPosition = originalPanelPosition + new Vector2(0, offset / CanvasScaleFactor());
+            uiPanel.anchoredPosition = newPosition;
+            Debug.Log($"[MainMenu] Adjusted UI panel by {offset} pixels to {newPosition}");
+        }
+    }
+
+    private float CanvasScaleFactor()
+    {
+        CanvasScaler scaler = GetComponentInParent<CanvasScaler>();
+        if (scaler != null)
+            return scaler.scaleFactor;
+        return 1f;
+    }
+
+    private void OnDestroy()
+    {
+        isDestroyed = true; // Mark as destroyed to prevent accessing invalid references
+        // Remove listeners to prevent memory leaks
+        if (loginInput != null)
+        {
+            loginInput.onSelect.RemoveAllListeners();
+            loginInput.onEndEdit.RemoveAllListeners();
+        }
+        if (passwordInput != null)
+        {
+            passwordInput.onSelect.RemoveAllListeners();
+            passwordInput.onEndEdit.RemoveAllListeners();
+        }
+    }
+
+    private bool ValidateUIComponents()
+    {
+        if (loginInput == null || passwordInput == null || errorText == null)
+        {
+            Debug.LogError("[MainMenu] UI components missing");
+            return false;
+        }
+        return true;
+    }
+
+    private async Task PreloadStudentDataAsync()
+    {
+        var loaderObject = new GameObject("StudentDataPreloader");
+        var progressController = loaderObject.AddComponent<StudentProgressController>();
+        var ratingPreloader = loaderObject.AddComponent<RatingPreloader>();
+
+        try
+        {
+            await Task.WhenAll(
+                progressController.PreloadSkillsAsync(),
+                ratingPreloader.PreloadRatingDataAsync()
+            );
+            Debug.Log("[MainMenu] Student data preloaded");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[MainMenu] Preload failed: {ex.Message}");
+        }
+        finally
+        {
+            if (loaderObject != null)
+                Destroy(loaderObject);
+        }
+    }
+
+    public async void OnLoginButtonClick()
+    {
+        if (!ValidateUIComponents()) return;
+
+        // Set loading indicator only if not destroyed
+        if (!isDestroyed && loadingIndicator != null)
+            loadingIndicator.SetActive(true);
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        try
+        {
+            //var user = await firebaseManager.AuthenticateUser(loginInput.text, passwordInput.text);
+            //if (user == null)
+            //{
+            //    if (!isDestroyed && errorText != null)
+            //        errorText.text = "Invalid login or password";
+            //    return;
+            //}
+
+            //UserSession.CurrentUser = user;
+            //if (user.Role != "student")
+            //{
+            //    if (!isDestroyed && errorText != null)
+            //        errorText.text = "Access restricted to students";
+            //    UserSession.CurrentUser = null;
+            //    return;
+            //}
+
+            //if (!isDestroyed && errorText != null)
+            //    errorText.text = "";
+            //await Task.WhenAll(
+            //    LoadStudentAvatarAsync(user.Id),
+            //    PreloadStudentDataAsync()
+            //);
+
+            LoadNewsInBackground();
+            await LoadStudentsSceneAsync();
+        }
+        catch (Exception ex)
+        {
+            if (!isDestroyed && errorText != null)
+                errorText.text = "Connection error";
+            Debug.LogError($"[MainMenu] Login failed: {ex.Message}");
+        }
+        finally
+        {
+            // Only access loadingIndicator if not destroyed
+            if (!isDestroyed && loadingIndicator != null)
+                loadingIndicator.SetActive(false);
+            stopwatch.Stop();
+            Debug.Log($"[MainMenu] Login completed in {stopwatch.ElapsedMilliseconds} ms");
+        }
+    }
+
+    private async Task LoadStudentAvatarAsync(string userId)
+    {
+        if (UserSession.CachedAvatar != null)
+        {
+            Debug.Log("[MainMenu] Using cached avatar");
+            return;
+        }
+
+        //byte[] avatarData = await firebaseManager.GetUserAvatar(userId);
+        //if (avatarData != null && avatarData.Length > 0)
+        //{
+        //    Texture2D texture = new Texture2D(2, 2);
+        //    if (texture.LoadImage(avatarData))
+        //        UserSession.CachedAvatar = texture;
+        //    else
+        //        Debug.LogWarning("[MainMenu] Failed to load avatar image");
+        //}
+    }
+
+    private void LoadNewsInBackground()
+    {
+        if (isNewsLoading) return;
+        isNewsLoading = true;
+
+        var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
+        StartCoroutine(LoadNewsCoroutine(vkNewsLoad));
+    }
+
+    private IEnumerator LoadNewsCoroutine(VKNewsLoad vkNewsLoad)
+    {
+        yield return vkNewsLoad.GetNewsFromVK(0, 20);
+
+        if (vkNewsLoad.allPosts != null && vkNewsLoad.groupDictionary != null)
+        {
+            NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
+            NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
+            NewsDataCache.SaveCacheToPersistentStorage();
+            Debug.Log("[MainMenu] News loaded in background");
         }
         else
         {
-            Debug.Log("Неверный логин или пароль.");
-            errorText.text = "Неверный логин или пароль.";
+            Debug.LogWarning("[MainMenu] Failed to load news");
         }
 
-        // Скрываем индикатор загрузки
-        if (loadingIndicator != null)
-            loadingIndicator.SetActive(false);
+        if (vkNewsLoad != null)
+            Destroy(vkNewsLoad);
+        isNewsLoading = false;
     }
 
-    IEnumerator LoadNewsSceneAsync()
+    private async Task LoadStudentsSceneAsync()
     {
-        // Асинхронная загрузка сцены с новостями
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("StudentsScene");
+        if (asyncLoad == null)
+        {
+            Debug.LogError("[MainMenu] Failed to load StudentsScene");
+            return;
+        }
 
-        // Ждем завершения загрузки
+        asyncLoad.allowSceneActivation = false;
         while (!asyncLoad.isDone)
         {
-            yield return null;
+            if (asyncLoad.progress >= 0.3f)
+                asyncLoad.allowSceneActivation = true;
+            await Task.Yield();
         }
     }
 
     public void OnNewsButtonClick()
     {
-        if (UserSession.CurrentStudent == null)
+        if (UserSession.CurrentUser == null)
         {
-            errorText.text = "Сначала войдите в систему.";
+            if (!isDestroyed && errorText != null)
+                errorText.text = "Please log in first.";
             return;
         }
 
-        StartCoroutine(LoadNewsBeforeTransition());
+        if (!isNewsLoading)
+            StartCoroutine(LoadNewsBeforeTransition());
     }
 
-    IEnumerator LoadNewsBeforeTransition()
+    private IEnumerator LoadNewsBeforeTransition()
     {
-        // Показываем индикатор загрузки
-        if (loadingIndicator != null)
+        isNewsLoading = true;
+        if (!isDestroyed && loadingIndicator != null)
             loadingIndicator.SetActive(true);
 
-        // Загружаем новости из ВКонтакте
-        yield return StartCoroutine(GetNewsFromVK());
+        var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
+        yield return vkNewsLoad.GetNewsFromVK(0, 20);
 
-        // Переходим на сцену с новостями
-        yield return StartCoroutine(LoadNewsSceneAsync());
+        if (vkNewsLoad.allPosts != null && vkNewsLoad.groupDictionary != null)
+        {
+            NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
+            NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
+            NewsDataCache.SaveCacheToPersistentStorage();
+            Debug.Log("[MainMenu] News loaded successfully");
+        }
+        else
+        {
+            if (!isDestroyed && errorText != null)
+                errorText.text = "News loading error";
+            Debug.LogError("[MainMenu] Failed to load news");
+        }
 
-        // Скрываем индикатор загрузки
-        if (loadingIndicator != null)
+        yield return StartCoroutine(LoadStudentsSceneCoroutine());
+
+        if (!isDestroyed && loadingIndicator != null)
             loadingIndicator.SetActive(false);
+        isNewsLoading = false;
+        if (vkNewsLoad != null)
+            Destroy(vkNewsLoad);
     }
 
-    IEnumerator GetNewsFromVK()
+    private IEnumerator LoadStudentsSceneCoroutine()
     {
-        // Используем VKNewsLoad для загрузки новостей
-        var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
-        yield return StartCoroutine(vkNewsLoad.GetNewsFromVK(0, 100)); // Загружаем все новости
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("StudentsScene");
+        if (asyncLoad == null)
+        {
+            Debug.LogError("[MainMenu] Failed to load StudentsScene");
+            yield break;
+        }
 
-        // Сохраняем данные в кэш
-        NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
-        NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
+        asyncLoad.allowSceneActivation = false;
+        while (!asyncLoad.isDone)
+        {
+            if (asyncLoad.progress >= 0.3f)
+                asyncLoad.allowSceneActivation = true;
+            yield return null;
+        }
+    }
 
-        // Уничтожаем временный компонент
-        Destroy(vkNewsLoad);
+    public void OnLogoutButtonClick()
+    {
+        UserSession.ClearSession();
+        SceneManager.LoadScene("MainScene");
+    }
+
+    public void OnRegButtonClick()
+    {
+        Debug.Log("[MainMenu] Clearing session");
+        UserSession.ClearSession();
+        Debug.Log("[MainMenu] Session cleared, starting async load of StRegistr");
+        StartCoroutine(LoadStRegistrSceneAsync());
+    }
+
+    private IEnumerator LoadStRegistrSceneAsync()
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("StRegistr");
+        if (asyncLoad == null)
+        {
+            Debug.LogError("[MainMenu] Failed to start loading StRegistr scene");
+            yield break;
+        }
+
+        asyncLoad.allowSceneActivation = false;
+        while (!asyncLoad.isDone)
+        {
+            Debug.Log($"[MainMenu] Loading progress: {asyncLoad.progress}");
+            if (asyncLoad.progress >= 0.9f)
+            {
+                asyncLoad.allowSceneActivation = true;
+                Debug.Log("[MainMenu] Allowing scene activation");
+            }
+            yield return null;
+        }
+        Debug.Log("[MainMenu] StRegistr scene loaded");
+
+        GameObject canvas = GameObject.Find("Canvas");
+        if (canvas != null)
+        {
+            Debug.Log("[MainMenu] Canvas found in scene after loading");
+        }
+        else
+        {
+            Debug.LogError("[MainMenu] Canvas NOT found in scene after loading");
+        }
     }
 }

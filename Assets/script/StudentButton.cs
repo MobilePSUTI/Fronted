@@ -5,29 +5,39 @@ using UnityEngine.SceneManagement;
 public class StudentButton : MonoBehaviour
 {
     private Student studentData;
-    private Button button;
-
-    private void Awake()
-    {
-        button = GetComponent<Button>();
-        button.onClick.AddListener(OnStudentClicked);
-    }
 
     public void SetStudentData(Student student)
     {
         studentData = student;
+        GetComponent<Button>().onClick.AddListener(OnStudentSelected);
     }
 
-    private void OnStudentClicked()
+    private async void OnStudentSelected()
     {
-        if (studentData != null)
+        //var dbManager = FindObjectOfType<FirebaseDBManager>();
+        //if (dbManager == null)
+        //{
+        //    Debug.LogError("FirebaseDBManager not found!");
+        //    return;
+        //}
+
+        // Load complete student data
+        //UserSession.SelectedStudent = await dbManager.GetStudentDetails(studentData.Id);
+
+        // Verify critical data exists
+        if (string.IsNullOrEmpty(UserSession.SelectedStudent.GroupId))
         {
-            UserSession.CurrentUser = studentData;
-            SceneManager.LoadScene("PrSkillsStudent");
+            Debug.LogError("Student has no group assigned!");
+            return;
         }
-        else
+
+        // Load group name if missing
+        if (string.IsNullOrEmpty(UserSession.SelectedStudent.GroupName))
         {
-            Debug.LogError("Данные студента не загружены");
+            //UserSession.SelectedStudent.GroupName =
+            //    await dbManager.GetGroupName(UserSession.SelectedStudent.GroupId);
         }
+
+        SceneManager.LoadScene("PrSkillsStudent");
     }
 }

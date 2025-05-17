@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 15003, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_AssetVersion: 1
   m_BuildTarget: 21
   m_Subtarget: 0
   m_PlatformId: 32e92b6f4db44fadb869cafb8184d021
   m_PlatformBuildProfile:
-    rid: 3505761202037850116
+    rid: 5275867335619248132
+  m_OverrideGlobalSceneList: 0
   m_Scenes: []
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
@@ -24,7 +26,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 3505761202037850116
+    - rid: 5275867335619248132
       type: {class: UWPPlatformSettings, ns: UnityEditor.UWP, asm: UnityEditor.UWP.Extensions}
       data:
         m_Development: 0

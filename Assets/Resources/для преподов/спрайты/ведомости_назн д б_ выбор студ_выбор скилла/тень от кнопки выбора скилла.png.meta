@@ -134,6 +134,32 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -311,7 +337,14 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_0": 8531502403606222401
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_1": 4675929680769849654
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_2": 6366071119833649981
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_3": 4530617113518534412
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_4": -5067401981672190929
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_5": -170517437790072419
+      "\u0442\u0435\u043D\u044C \u043E\u0442 \u043A\u043D\u043E\u043F\u043A\u0438 \u0432\u044B\u0431\u043E\u0440\u0430 \u0441\u043A\u0438\u043B\u043B\u0430_6": 2629204384993695459
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -2,25 +2,37 @@ using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System.IO;
+using System.Linq; // Для использования Distinct()
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Word Lists")]
-    public List<string> easyWords = new List<string> { "cat", "dog", "sun", "hat", "pen" };
-    public List<string> mediumWords = new List<string> { "apple", "house", "water", "light", "music" };
-    public List<string> hardWords = new List<string> { "elephant", "computer", "keyboard", "adventure", "mountain" };
+    [Header("Word Files")]
+    public TextAsset easyWordsFile;
+    public TextAsset mediumWordsFile;
+    public TextAsset hardWordsFile;
 
     [Header("Game Settings")]
     public float initialTimePerWord = 30f;
     public float difficultyIncreaseInterval = 60f;
     public int maxWordsToLose = 3;
-    public const int MAX_COINS = 50; // ������������ ���������� �����
+    public const int MAX_COINS = 50;
 
     [Header("UI References")]
     public TextMeshProUGUI coinsText;
     public TextMeshProUGUI timerText;
+
+    // Списки слов
+    private List<string> easyWords = new List<string>();
+    private List<string> mediumWords = new List<string>();
+    private List<string> hardWords = new List<string>();
+
+    // Резервные списки слов
+    private readonly List<string> defaultEasyWords = new List<string> { "cat", "dog", "sun", "hat", "pen" };
+    private readonly List<string> defaultMediumWords = new List<string> { "apple", "house", "water", "light", "music" };
+    private readonly List<string> defaultHardWords = new List<string> { "elephant", "computer", "keyboard", "adventure", "mountain" };
 
     private int coinsCollected = 0;
     public float gameTimer = 0f;
@@ -33,8 +45,8 @@ public class GameManager : MonoBehaviour
         get => coinsCollected;
         set
         {
-            coinsCollected = Mathf.Min(value, MAX_COINS); // �� ��� ��������� 50
-            coinsText.text = "Coins: " + coinsCollected;
+            coinsCollected = Mathf.Min(value, MAX_COINS);
+            coinsText.text = ""+coinsCollected;
 
             if (coinsCollected >= MAX_COINS && !gameOver)
             {
@@ -48,6 +60,9 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            LoadWordsFromFiles();
+            CheckWordListsNotEmpty();
+            GameSession.ResetSession(); // <--- Важно
         }
         else
         {
@@ -55,15 +70,57 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void Start()
+
+    private void LoadWordsFromFiles()
     {
-#if UNITY_ANDROID || UNITY_IOS
-        MobileKeyboardHandler keyboardHandler = FindObjectOfType<MobileKeyboardHandler>();
-        if (keyboardHandler != null)
+        easyWords = LoadWordsFromFile(easyWordsFile, defaultEasyWords);
+        mediumWords = LoadWordsFromFile(mediumWordsFile, defaultMediumWords);
+        hardWords = LoadWordsFromFile(hardWordsFile, defaultHardWords);
+    }
+
+    private List<string> LoadWordsFromFile(TextAsset file, List<string> defaultWords)
+    {
+        if (file == null)
         {
-            keyboardHandler.OpenSystemKeyboard();
+            Debug.LogWarning("Word file not assigned, using default words");
+            return new List<string>(defaultWords);
         }
-#endif
+
+        // Разделяем текст файла по строкам и удаляем пустые записи
+        var words = file.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries)
+                            .Select(w => w.Trim()) // Удаляем пробелы по краям
+                            .Where(w => !string.IsNullOrWhiteSpace(w)) // Игнорируем пустые строки
+                            .Distinct() // Удаляем дубликаты
+                            .ToList();
+
+        if (words.Count == 0)
+        {
+            Debug.LogWarning("Word file is empty, using default words");
+            return new List<string>(defaultWords);
+        }
+
+        return words;
+    }
+
+    private void CheckWordListsNotEmpty()
+    {
+        if (easyWords.Count == 0)
+        {
+            Debug.LogError("Easy words list is empty after loading!");
+            easyWords = new List<string>(defaultEasyWords);
+        }
+
+        if (mediumWords.Count == 0)
+        {
+            Debug.LogError("Medium words list is empty after loading!");
+            mediumWords = new List<string>(defaultMediumWords);
+        }
+
+        if (hardWords.Count == 0)
+        {
+            Debug.LogError("Hard words list is empty after loading!");
+            hardWords = new List<string>(defaultHardWords);
+        }
     }
 
     private void Update()
@@ -97,7 +154,7 @@ public class GameManager : MonoBehaviour
 
     public void AddCoins(int amount)
     {
-        CoinsCollected += amount; // ���������� �������� � �������
+        CoinsCollected += amount;
     }
 
     public void WordMissed()
@@ -111,13 +168,13 @@ public class GameManager : MonoBehaviour
         gameOver = true;
         Debug.Log(isWin ? "You Win!" : "Game Over! Coins: " + coinsCollected);
 
-        PlayerPrefs.SetInt("FinalCoins", coinsCollected);
-        PlayerPrefs.SetFloat("FinalTime", gameTimer);
-        PlayerPrefs.SetInt("IsWin", isWin ? 1 : 0);
-        PlayerPrefs.Save();
-
+        GameSession.AddCoins(coinsCollected);
+        GameSession.SetTime(gameTimer);
+        GameOverController.SetGameResults(coinsCollected, gameTimer, isWin);
         SceneManager.LoadScene("GameOverEnglish");
     }
+
+
 
     private void UpdateTimerUI()
     {

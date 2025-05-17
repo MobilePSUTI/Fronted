@@ -1,7 +1,11 @@
+using System;
 using UnityEngine;
 
+[Serializable]
 public class Group
 {
-    public int Id { get; set; } // group_id
-    public string Title { get; set; } // Название группы
+    public string Id { get; set; }
+    public string Title { get; set; }
+    public string Course { get; set; }
+    public string ProgramId { get; set; }
 }
