@@ -161,6 +161,7 @@ GameObject:
   - component: {fileID: 565144596357131035}
   - component: {fileID: 9158391787873728660}
   - component: {fileID: 8619672800043931301}
+  - component: {fileID: 4592522921935722503}
   m_Layer: 5
   m_Name: Panel_header
   m_TagString: Untagged
@@ -229,6 +230,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4592522921935722503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2737981946493366867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e4fc51211702f849962a734b0dee64c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelSettings: {fileID: 0}
+  panelNotifications: {fileID: 0}
 --- !u!1 &2899894753253287586
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,7 +256,6 @@ GameObject:
   - component: {fileID: 2223701740364612348}
   - component: {fileID: 3772891030345312154}
   - component: {fileID: 8699098653538229227}
-  - component: {fileID: 7112004543606394888}
   m_Layer: 5
   m_Name: settings
   m_TagString: Untagged
@@ -350,19 +364,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7112004543606394888
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2899894753253287586}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15190d035967abf4b88fb0e83d8d794e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Panel: {fileID: 0}
 --- !u!1 &4419158791271494403
 GameObject:
   m_ObjectHideFlags: 0
