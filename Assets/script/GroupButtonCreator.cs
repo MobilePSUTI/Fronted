@@ -18,9 +18,9 @@ public class GroupButtonCreator : MonoBehaviour
         try
         {
             // Проверяем кеш
-            if (UserSession.CachedGroups.Count > 0)
+            //if (UserSession.CachedGroups.Count > 0)
             {
-                CreateButtons(UserSession.CachedGroups);
+                //CreateButtons(UserSession.CachedGroups);
                 return;
             }
 
@@ -70,8 +70,8 @@ public class GroupButtonCreator : MonoBehaviour
 
     void OnGroupButtonClick(string groupName, string groupId)
     {
-        UserSession.SelectedGroupId = groupId;
-        UserSession.SelectedGroupName = groupName;
+        //UserSession.SelectedGroupId = groupId;
+        //UserSession.SelectedGroupName = groupName;
         SceneManager.LoadScene("PrListStudents");
     }
 }

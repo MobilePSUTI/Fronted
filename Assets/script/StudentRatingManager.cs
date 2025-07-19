@@ -17,7 +17,7 @@ public class StudentRatingManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool debugMode = true;
 
-    private List<UserSession.UserRatingData> allUsers = new List<UserSession.UserRatingData>();
+    //private List<UserSession.UserRatingData> allUsers = new List<UserSession.UserRatingData>();
     private bool isLoading;
     //private FirebaseDBManager dbManager;
 
@@ -40,12 +40,12 @@ public class StudentRatingManager : MonoBehaviour
 
         try
         {
-            if (UserSession.CachedRatingData.Count > 0)
-            {
-                DebugLog("Using cached rating data");
-                allUsers = UserSession.CachedRatingData;
-                await DisplayRating();
-            }
+            //if (UserSession.CachedRatingData.Count > 0)
+            //{
+            //    DebugLog("Using cached rating data");
+            //    allUsers = UserSession.CachedRatingData;
+            //    await DisplayRating();
+            //}
 
             await LoadAllUsersWithPoints();
             await DisplayRating();
@@ -63,7 +63,7 @@ public class StudentRatingManager : MonoBehaviour
 
     private async Task LoadAllUsersWithPoints()
     {
-        allUsers.Clear();
+        //allUsers.Clear();
         DebugLog("Cleared existing user data");
 
         //DataSnapshot usersSnapshot = await FirebaseDatabase.DefaultInstance
@@ -112,9 +112,9 @@ public class StudentRatingManager : MonoBehaviour
         //    });
         //}
 
-        allUsers = allUsers.OrderByDescending(u => u.TotalPoints).ToList();
-        UserSession.CachedRatingData = allUsers;
-        DebugLog($"Total users with points: {allUsers.Count}");
+        //allUsers = allUsers.OrderByDescending(u => u.TotalPoints).ToList();
+        //UserSession.CachedRatingData = allUsers;
+        //DebugLog($"Total users with points: {allUsers.Count}");
     }
 
     private async Task<int> CalculateTotalPoints(string userId)
@@ -162,36 +162,36 @@ public class StudentRatingManager : MonoBehaviour
             }
         }
 
-        var currentUserData = UserSession.CurrentUser != null
-            ? allUsers.FirstOrDefault(u => u.User.Id == UserSession.CurrentUser.Id)
-            : null;
+        //var currentUserData = UserSession.CurrentUser != null
+        //    ? allUsers.FirstOrDefault(u => u.User.Id == UserSession.CurrentUser.Id)
+        //    : null;
 
-        int topUsersToShow = Mathf.Min(10, allUsers.Count);
-        for (int i = 0; i < topUsersToShow; i++)
-        {
-            if (i >= ratingItems.Length || ratingItems[i] == null) continue;
+        //int topUsersToShow = Mathf.Min(10, allUsers.Count);
+        //for (int i = 0; i < topUsersToShow; i++)
+        //{
+        //    if (i >= ratingItems.Length || ratingItems[i] == null) continue;
 
-            var userData = allUsers[i];
-            int position = i + 1;
+        //    var userData = allUsers[i];
+        //    int position = i + 1;
 
-            if (SetTextComponents(ratingItems[i], position.ToString(), $"{userData.User.First} {userData.User.Last[0] + "."}",
-                userData.TotalPoints.ToString(), $"{userData.GroupName} ({userData.Course})"))
-            {
-                ratingItems[i].SetActive(true);
-                if (currentUserData != null && userData.User.Id == currentUserData.User.Id)
-                    HighlightPosition(ratingItems[i]);
-            }
-        }
+        //    if (SetTextComponents(ratingItems[i], position.ToString(), $"{userData.User.First} {userData.User.Last[0] + "."}",
+        //        userData.TotalPoints.ToString(), $"{userData.GroupName} ({userData.Course})"))
+        //    {
+        //        ratingItems[i].SetActive(true);
+        //        if (currentUserData != null && userData.User.Id == currentUserData.User.Id)
+        //            HighlightPosition(ratingItems[i]);
+        //    }
+        //}
 
         if (currentUserRatingItem != null && UserSession.CurrentUser != null)
         {
-            int position = currentUserData != null ? allUsers.IndexOf(currentUserData) + 1 : -1;
-            int points = currentUserData?.TotalPoints ?? await CalculateTotalPoints(UserSession.CurrentUser.Id);
-            string groupName = currentUserData?.GroupName ?? "N/A";
-            string course = currentUserData?.Course ?? "N/A";
+            //int position = currentUserData != null ? allUsers.IndexOf(currentUserData) + 1 : -1;
+            //int points = currentUserData?.TotalPoints ?? await CalculateTotalPoints(UserSession.CurrentUser.Id);
+            //string groupName = currentUserData?.GroupName ?? "N/A";
+            //string course = currentUserData?.Course ?? "N/A";
 
-            if (string.IsNullOrEmpty(groupName) || groupName == "N/A")
-            {
+            //if (string.IsNullOrEmpty(groupName) || groupName == "N/A")
+            //{
                 //DataSnapshot userSnapshot = await FirebaseDatabase.DefaultInstance
                 //    .GetReference("14/data")
                 //    .Child(UserSession.CurrentUser.Id)
@@ -210,15 +210,15 @@ public class StudentRatingManager : MonoBehaviour
                 //        }
                 //    }
                 //}
-            }
+            //}
 
-            if (SetTextComponents(currentUserRatingItem, position > 0 ? position.ToString() : "-",
-                $"{UserSession.CurrentUser.Last} {UserSession.CurrentUser.First}", points.ToString(),
-                $"{groupName} ({course})"))
-            {
-                HighlightPosition(currentUserRatingItem);
-                currentUserRatingItem.SetActive(true);
-            }
+            //if (SetTextComponents(currentUserRatingItem, position > 0 ? position.ToString() : "-",
+            //    $"{UserSession.CurrentUser.Last} {UserSession.CurrentUser.First}", points.ToString(),
+            //    $"{groupName} ({course})"))
+            //{
+            //    HighlightPosition(currentUserRatingItem);
+            //    currentUserRatingItem.SetActive(true);
+            //}
         }
     }
 

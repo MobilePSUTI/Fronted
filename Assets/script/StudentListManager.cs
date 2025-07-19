@@ -56,13 +56,13 @@ public class StudentListManager : MonoBehaviour
             //}
 
             // Проверяем кеш в UserSession
-            if (UserSession.CachedStudents.TryGetValue(UserSession.SelectedGroupId, out var cachedStudents))
-            {
-                await CreateStudentList(cachedStudents);
-                if (loadingIndicator != null)
-                    loadingIndicator.SetActive(false);
-                return;
-            }
+            //if (UserSession.CachedStudents.TryGetValue(UserSession.SelectedGroupId, out var cachedStudents))
+            //{
+            //    await CreateStudentList(cachedStudents);
+            //    if (loadingIndicator != null)
+            //        loadingIndicator.SetActive(false);
+            //    return;
+            //}
 
             // Загружаем студентов
             //var students = await _dbManager.GetStudentsByGroup(UserSession.SelectedGroupId);

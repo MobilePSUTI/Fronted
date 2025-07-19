@@ -25,18 +25,18 @@ public class StudentButton : MonoBehaviour
         //UserSession.SelectedStudent = await dbManager.GetStudentDetails(studentData.Id);
 
         // Verify critical data exists
-        if (string.IsNullOrEmpty(UserSession.SelectedStudent.GroupId))
-        {
-            Debug.LogError("Student has no group assigned!");
-            return;
-        }
+        //if (string.IsNullOrEmpty(UserSession.SelectedStudent.GroupId))
+        //{
+        //    Debug.LogError("Student has no group assigned!");
+        //    return;
+        //}
 
-        // Load group name if missing
-        if (string.IsNullOrEmpty(UserSession.SelectedStudent.GroupName))
-        {
-            //UserSession.SelectedStudent.GroupName =
-            //    await dbManager.GetGroupName(UserSession.SelectedStudent.GroupId);
-        }
+        //// Load group name if missing
+        //if (string.IsNullOrEmpty(UserSession.SelectedStudent.GroupName))
+        //{
+        //    //UserSession.SelectedStudent.GroupName =
+        //    //    await dbManager.GetGroupName(UserSession.SelectedStudent.GroupId);
+        //}
 
         SceneManager.LoadScene("PrSkillsStudent");
     }

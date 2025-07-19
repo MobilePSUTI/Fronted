@@ -42,7 +42,7 @@ public class GameOverController : MonoBehaviour
         // ��������� � Firebase
         if (UserSession.CurrentUser != null)
         {
-            SaveGameResults(UserSession.CurrentUser.Id, score, time, isWin);
+            //SaveGameResults(UserSession.CurrentUser.Id, score, time, isWin);
         }
     }
 

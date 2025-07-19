@@ -11,12 +11,12 @@ public class PrSkillsStudent : MonoBehaviour
 
     async void Start()
     {
-        if (UserSession.SelectedStudent == null)
-        {
-            Debug.LogError("Студент не выбран!");
-            SceneManager.LoadScene("PrListStudents");
-            return;
-        }
+        //if (UserSession.SelectedStudent == null)
+        //{
+        //    Debug.LogError("Студент не выбран!");
+        //    SceneManager.LoadScene("PrListStudents");
+        //    return;
+        //}
 
         // Initialize FirebaseDBManager if needed
         //var dbManager = FindObjectOfType<FirebaseDBManager>();
@@ -34,7 +34,7 @@ public class PrSkillsStudent : MonoBehaviour
         //        await dbManager.GetGroupName(UserSession.SelectedStudent.GroupId);
         //}
 
-        DisplayStudentInfo(UserSession.SelectedStudent);
+        //DisplayStudentInfo(UserSession.SelectedStudent);
 
         // Initialize skills manager
         await skillsManager.Initialize();

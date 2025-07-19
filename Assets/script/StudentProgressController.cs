@@ -56,11 +56,11 @@ public class StudentProgressController : MonoBehaviour
         if (additionalSkillTitles == null) additionalSkillTitles = new List<TextMeshProUGUI>();
 
         // Check for cached data
-        if (UserSession.CachedSkills != null)
-        {
-            LoadFromCache(UserSession.CachedSkills);
-            dataLoadedFromCache = true;
-        }
+        //if (UserSession.CachedSkills != null)
+        //{
+        //    LoadFromCache(UserSession.CachedSkills);
+        //    dataLoadedFromCache = true;
+        //}
     }
 
     private async void Start()
@@ -423,13 +423,13 @@ public class StudentProgressController : MonoBehaviour
 
     public void SaveToCache()
     {
-        UserSession.CachedSkills = new SkillsCache
-        {
-            allSkills = allSkills,
-            studentMainSkills = studentMainSkills,
-            studentAdditionalSkills = studentAdditionalSkills,
-            programMainSkills = programMainSkills
-        };
+        //UserSession.CachedSkills = new SkillsCache
+        //{
+        //    allSkills = allSkills,
+        //    studentMainSkills = studentMainSkills,
+        //    studentAdditionalSkills = studentAdditionalSkills,
+        //    programMainSkills = programMainSkills
+        //};
     }
 
     // Coroutine versions for preloading
@@ -566,11 +566,11 @@ public class StudentProgressController : MonoBehaviour
     {
         try
         {
-            if (UserSession.CurrentUser == null || string.IsNullOrEmpty(UserSession.CurrentUser.Id))
-            {
-                Debug.LogWarning("[StudentProgress] No current user or user ID, skipping skill preload");
-                return;
-            }
+            //if (UserSession.CurrentUser == null || string.IsNullOrEmpty(UserSession.CurrentUser.Id))
+            //{
+            //    Debug.LogWarning("[StudentProgress] No current user or user ID, skipping skill preload");
+            //    return;
+            //}
 
             //var firebaseManager = FirebaseDBManager.Instance;
             //if (firebaseManager == null)
@@ -591,12 +591,12 @@ public class StudentProgressController : MonoBehaviour
             //}
 
             // Check GroupId
-            string groupId = UserSession.SelectedStudent.GroupId;
-            if (string.IsNullOrEmpty(groupId))
-            {
-                Debug.LogWarning($"[StudentProgress] GroupId is missing for user {UserSession.CurrentUser.Id}");
-                return;
-            }
+            //string groupId = UserSession.SelectedStudent.GroupId;
+            //if (string.IsNullOrEmpty(groupId))
+            //{
+            //    Debug.LogWarning($"[StudentProgress] GroupId is missing for user {UserSession.CurrentUser.Id}");
+            //    return;
+            //}
 
             // Get group details to find program ID
             //var groupDetails = await firebaseManager.GetGroupDetails(groupId);

@@ -2,429 +2,405 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 public class MainMenu : MonoBehaviour
 {
+    [Header("UI References")]
     [SerializeField] private GameObject loadingIndicator;
-    [SerializeField] private TMP_InputField loginInput;
+    [SerializeField] private TMP_InputField emailInput;
     [SerializeField] private TMP_InputField passwordInput;
     [SerializeField] private TMP_Text errorText;
-    [SerializeField] private RectTransform uiPanel; // Reference to the parent panel or canvas
+    [SerializeField] private RectTransform uiPanel;
+    [SerializeField] private Button loginButton;
+    [SerializeField] private Button registerButton;
+    [SerializeField] private Button forgotPasswordButton;
 
-    //private FirebaseDBManager firebaseManager;
-    private bool isNewsLoading;
-    private bool isDestroyed; // Track if the GameObject is destroyed
+    [Header("Settings")]
+    [SerializeField] private float minPasswordLength = 6;
+    [SerializeField] private float maxPasswordLength = 30;
+    [SerializeField] private float uiMoveDuration = 0.3f;
+
+    private bool isProcessing;
     private Vector2 originalPanelPosition;
-    private bool isKeyboardVisible;
-    private float keyboardHeight;
+    private Coroutine movePanelCoroutine;
 
     private void Awake()
     {
-        // Store the original position of the UI panel
-        if (uiPanel != null)
-            originalPanelPosition = uiPanel.anchoredPosition;
+        originalPanelPosition = uiPanel.anchoredPosition;
+
+        // Initialize UI
+        errorText.text = "";
+        loginButton.onClick.AddListener(OnLoginButtonClick);
+        registerButton.onClick.AddListener(OnRegisterButtonClick);
+        forgotPasswordButton.onClick.AddListener(OnForgotPasswordClick);
+
+        // Add input field validation
+        emailInput.onValueChanged.AddListener(ValidateEmailField);
+        passwordInput.onValueChanged.AddListener(ValidatePasswordField);
     }
 
-    private async void Start()
+    private void Start()
     {
-        if (!ValidateUIComponents()) return;
-
-
-        var firebaseManagerObject = new GameObject("FirebaseDBManager");
-        //firebaseManager = firebaseManagerObject.AddComponent<FirebaseDBManager>();
-        //DontDestroyOnLoad(firebaseManagerObject);
-
-        //await firebaseManager.Initialize();
-
-        if (UserSession.CurrentUser != null && UserSession.CurrentUser.Role == "student")
+        // Check for saved session
+        if (UserSession.HasSavedSession())
         {
-            Debug.Log($"[MainMenu] Current user: {UserSession.CurrentUser.Username}");
-            await PreloadStudentDataAsync();
+            StartCoroutine(TryAutoLogin());
         }
-
-        // Add listeners for input field focus
-        SetupInputFieldListeners();
     }
 
-    private void SetupInputFieldListeners()
+    #region Input Validation
+    private void ValidateEmailField(string email)
     {
-        if (loginInput != null)
+        if (string.IsNullOrEmpty(email))
         {
-            loginInput.onSelect.AddListener((string text) => OnInputFieldSelected(loginInput));
-            loginInput.onEndEdit.AddListener((string text) => OnInputFieldDeselected());
+            SetInputFieldState(emailInput, false, "Email is required");
+            return;
         }
-        if (passwordInput != null)
+
+        bool isValid = IsValidEmail(email);
+        SetInputFieldState(emailInput, isValid, isValid ? "" : "Invalid email format");
+        UpdateLoginButtonState();
+    }
+
+    private void ValidatePasswordField(string password)
+    {
+        if (string.IsNullOrEmpty(password))
         {
-            passwordInput.onSelect.AddListener((string text) => OnInputFieldSelected(passwordInput));
-            passwordInput.onEndEdit.AddListener((string text) => OnInputFieldDeselected());
+            SetInputFieldState(passwordInput, false, "Password is required");
+            return;
+        }
+
+        bool isValid = password.Length >= minPasswordLength && password.Length <= maxPasswordLength;
+        string error = isValid ? "" : $"Password must be {minPasswordLength}-{maxPasswordLength} characters";
+        SetInputFieldState(passwordInput, isValid, error);
+        UpdateLoginButtonState();
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            return regex.IsMatch(email);
+        }
+        catch
+        {
+            return false;
         }
     }
 
-    private void OnInputFieldSelected(TMP_InputField inputField)
+    private void SetInputFieldState(TMP_InputField field, bool isValid, string errorMessage)
+    {
+        ColorBlock colors = field.colors;
+        colors.normalColor = isValid ? Color.white : new Color(1, 0.8f, 0.8f);
+        colors.selectedColor = isValid ? Color.white : new Color(1, 0.8f, 0.8f);
+        field.colors = colors;
+
+        if (!isValid && field.isFocused)
+        {
+            if (!string.IsNullOrEmpty(errorMessage) && errorText.text != errorMessage)
+            {
+                errorText.text = errorMessage;
+            }
+        }
+    }
+
+    private void UpdateLoginButtonState()
+    {
+        bool emailValid = IsValidEmail(emailInput.text);
+        bool passwordValid = passwordInput.text.Length >= minPasswordLength &&
+                            passwordInput.text.Length <= maxPasswordLength;
+
+        loginButton.interactable = emailValid && passwordValid && !isProcessing;
+    }
+    #endregion
+
+    #region Login Process
+    private IEnumerator TryAutoLogin()
+    {
+        string savedToken = PlayerPrefs.GetString("AuthToken");
+        string savedUserId = PlayerPrefs.GetString("UserId");
+
+        if (string.IsNullOrEmpty(savedToken) || string.IsNullOrEmpty(savedUserId))
+        {
+            yield break;
+        }
+
+        SetProcessingState(true);
+
+        yield return StartCoroutine(ApiClient.Instance.GetUserData(
+            savedUserId,
+            savedToken,
+            (success, userData) => {
+                if (success)
+                {
+                    userData.token = savedToken;
+                    UserSession.CurrentUser = userData;
+                    ProceedAfterLogin();
+                }
+                else
+                {
+                    UserSession.ClearSession();
+                    SetProcessingState(false);
+                }
+            }
+        ));
+    }
+
+    private void OnLoginButtonClick()
+    {
+        if (isProcessing) return;
+
+        string email = emailInput.text.Trim();
+        string password = passwordInput.text;
+
+        // Final validation
+        if (!IsValidEmail(email))
+        {
+            errorText.text = "Please enter a valid email address";
+            return;
+        }
+
+        if (password.Length < minPasswordLength || password.Length > maxPasswordLength)
+        {
+            errorText.text = $"Password must be {minPasswordLength}-{maxPasswordLength} characters";
+            return;
+        }
+
+        StartCoroutine(LoginProcess(email, password));
+    }
+
+    private IEnumerator LoginProcess(string email, string password)
+    {
+        SetProcessingState(true);
+        errorText.text = "";
+
+        yield return StartCoroutine(ApiClient.Instance.Login(
+            email,
+            password,
+            (success, token) => {
+                if (!success)
+                {
+                    errorText.text = token; // Error message from server
+                    SetProcessingState(false);
+                    return;
+                }
+
+                // Get user data after successful login
+                StartCoroutine(GetUserDataAfterLogin(token));
+            }
+        ));
+    }
+
+    private IEnumerator GetUserDataAfterLogin(string token)
+    {
+        yield return StartCoroutine(ApiClient.Instance.GetUserData(
+            "current", // Special endpoint for current user
+            token,
+            (success, userData) => {
+                if (!success)
+                {
+                    errorText.text = "Failed to load user data";
+                    SetProcessingState(false);
+                    return;
+                }
+
+                userData.token = token;
+                UserSession.CurrentUser = userData;
+
+                // Check if avatar needs to be loaded
+                if (string.IsNullOrEmpty(userData.avatarUrl))
+                {
+                    ProceedAfterLogin();
+                }
+                else
+                {
+                    StartCoroutine(LoadUserAvatar(userData.avatarUrl));
+                }
+            }
+        ));
+    }
+
+    private IEnumerator LoadUserAvatar(string avatarUrl)
+    {
+        yield return StartCoroutine(ApiClient.Instance.DownloadAvatar(
+            avatarUrl,
+            (success, texture) => {
+                if (success)
+                {
+                    UserSession.CachedAvatar = texture;
+                }
+                ProceedAfterLogin();
+            }
+        ));
+    }
+
+    private void ProceedAfterLogin()
+    {
+        if (UserSession.CurrentUser == null)
+        {
+            SetProcessingState(false);
+            return;
+        }
+
+        switch (UserSession.CurrentUser.role.ToLower())
+        {
+            case "student":
+                if (string.IsNullOrEmpty(UserSession.CurrentUser.avatarUrl))
+                {
+                    SceneManager.LoadScene("MenuAvatar");
+                }
+                else
+                {
+                    SceneManager.LoadScene("StudentsScene");
+                }
+                break;
+
+            case "teacher":
+                SceneManager.LoadScene("PrepodModel");
+                break;
+
+            case "applicant":
+                SceneManager.LoadScene("ApplicantScene");
+                break;
+
+            default:
+                errorText.text = "Unknown user role";
+                SetProcessingState(false);
+                break;
+        }
+    }
+    #endregion
+
+    #region UI Management
+    private void SetProcessingState(bool processing)
+    {
+        isProcessing = processing;
+        loadingIndicator.SetActive(processing);
+        emailInput.interactable = !processing;
+        passwordInput.interactable = !processing;
+        loginButton.interactable = !processing;
+        registerButton.interactable = !processing;
+        forgotPasswordButton.interactable = !processing;
+    }
+
+    private void OnRegisterButtonClick()
+    {
+        if (isProcessing) return;
+        SceneManager.LoadScene("RegistrationScene");
+    }
+
+    private void OnForgotPasswordClick()
+    {
+        if (isProcessing) return;
+        SceneManager.LoadScene("PasswordResetScene");
+    }
+
+    public void OnInputFieldSelected(TMP_InputField inputField)
     {
         if (Application.isMobilePlatform)
         {
-            StartCoroutine(AdjustForKeyboard(inputField));
+            if (movePanelCoroutine != null)
+            {
+                StopCoroutine(movePanelCoroutine);
+            }
+            movePanelCoroutine = StartCoroutine(AdjustForKeyboard(inputField));
         }
     }
 
-    private void OnInputFieldDeselected()
+    public void OnInputFieldDeselected()
     {
-        if (Application.isMobilePlatform && uiPanel != null)
+        if (Application.isMobilePlatform)
         {
-            // Reset panel position when keyboard is hidden
-            uiPanel.anchoredPosition = originalPanelPosition;
-            isKeyboardVisible = false;
+            if (movePanelCoroutine != null)
+            {
+                StopCoroutine(movePanelCoroutine);
+            }
+            movePanelCoroutine = StartCoroutine(MovePanelToOriginalPosition());
         }
     }
 
     private IEnumerator AdjustForKeyboard(TMP_InputField inputField)
     {
-        // Wait for the keyboard to appear (increased delay for reliability)
         yield return new WaitForSeconds(0.1f);
 
         if (!TouchScreenKeyboard.isSupported || !TouchScreenKeyboard.visible)
         {
-            isKeyboardVisible = false;
-            if (uiPanel != null)
-                uiPanel.anchoredPosition = originalPanelPosition;
             yield break;
         }
 
-        isKeyboardVisible = true;
-
-        // Estimate keyboard height (fallback method for better compatibility)
-        float estimatedKeyboardHeight = Screen.height * 0.4f; // Fallback: assume 40% of screen height
-        if (TouchScreenKeyboard.area.height > 0)
-        {
-            estimatedKeyboardHeight = TouchScreenKeyboard.area.height / CanvasScaleFactor();
-        }
-
-        keyboardHeight = estimatedKeyboardHeight;
-
-        // Get the input field's position in screen space
         RectTransform inputRect = inputField.GetComponent<RectTransform>();
         Vector3[] corners = new Vector3[4];
         inputRect.GetWorldCorners(corners);
-        float inputFieldBottomY = corners[0].y; // Bottom-left corner in world space
-        float inputFieldHeight = corners[1].y - corners[0].y; // Height of the input field
+        float inputFieldBottom = corners[0].y;
 
-        // Convert bottom position to screen space
-        Vector2 inputFieldBottomScreenPos = RectTransformUtility.WorldToScreenPoint(null, corners[0]);
-
-        // Calculate the top of the keyboard in screen space
+        float keyboardHeight = GetKeyboardHeight();
         float screenHeight = Screen.height;
-        float keyboardTopY = screenHeight - keyboardHeight;
+        float keyboardTop = screenHeight - keyboardHeight;
 
-        // Calculate how much the input field is obscured by the keyboard
-        float offset = 0f;
-        if (inputFieldBottomScreenPos.y < keyboardTopY)
-        {
-            // The input field is below the top of the keyboard, so we need to move it up
-            offset = keyboardTopY - inputFieldBottomScreenPos.y + (inputFieldHeight * CanvasScaleFactor()) + 5f; // Add padding
-        }
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Vector2 inputFieldBottomScreen = RectTransformUtility.WorldToScreenPoint(null, corners[0]);
+        float inputFieldBottomY = inputFieldBottomScreen.y;
 
-        // Apply the offset to the UI panel
-        if (uiPanel != null && offset > 0)
+        if (inputFieldBottomY < keyboardTop + 50) // 50 pixels buffer
         {
-            Vector2 newPosition = originalPanelPosition + new Vector2(0, offset / CanvasScaleFactor());
-            uiPanel.anchoredPosition = newPosition;
-            Debug.Log($"[MainMenu] Adjusted UI panel by {offset} pixels to {newPosition}");
+            float offset = (keyboardTop + 50 - inputFieldBottomY) / canvas.scaleFactor;
+            Vector2 targetPosition = originalPanelPosition + new Vector2(0, offset);
+
+            yield return StartCoroutine(MovePanelToPosition(targetPosition));
         }
     }
 
-    private float CanvasScaleFactor()
+    private IEnumerator MovePanelToPosition(Vector2 targetPosition)
     {
-        CanvasScaler scaler = GetComponentInParent<CanvasScaler>();
-        if (scaler != null)
-            return scaler.scaleFactor;
-        return 1f;
+        float elapsedTime = 0f;
+        Vector2 startPosition = uiPanel.anchoredPosition;
+
+        while (elapsedTime < uiMoveDuration)
+        {
+            uiPanel.anchoredPosition = Vector2.Lerp(
+                startPosition,
+                targetPosition,
+                elapsedTime / uiMoveDuration
+            );
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        uiPanel.anchoredPosition = targetPosition;
     }
+
+    private IEnumerator MovePanelToOriginalPosition()
+    {
+        yield return StartCoroutine(MovePanelToPosition(originalPanelPosition));
+    }
+
+    private float GetKeyboardHeight()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        using (AndroidJavaClass unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject unityActivity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaObject unityView = unityActivity.Call<AndroidJavaObject>("getWindow").Call<AndroidJavaObject>("getDecorView");
+            AndroidJavaObject rect = new AndroidJavaObject("android.graphics.Rect");
+            unityView.Call("getWindowVisibleDisplayFrame", rect);
+            return Screen.height - rect.Call<int>("height");
+        }
+#else
+        return TouchScreenKeyboard.area.height;
+#endif
+    }
+    #endregion
 
     private void OnDestroy()
     {
-        isDestroyed = true; // Mark as destroyed to prevent accessing invalid references
-        // Remove listeners to prevent memory leaks
-        if (loginInput != null)
-        {
-            loginInput.onSelect.RemoveAllListeners();
-            loginInput.onEndEdit.RemoveAllListeners();
-        }
-        if (passwordInput != null)
-        {
-            passwordInput.onSelect.RemoveAllListeners();
-            passwordInput.onEndEdit.RemoveAllListeners();
-        }
-    }
-
-    private bool ValidateUIComponents()
-    {
-        if (loginInput == null || passwordInput == null || errorText == null)
-        {
-            Debug.LogError("[MainMenu] UI components missing");
-            return false;
-        }
-        return true;
-    }
-
-    private async Task PreloadStudentDataAsync()
-    {
-        var loaderObject = new GameObject("StudentDataPreloader");
-        var progressController = loaderObject.AddComponent<StudentProgressController>();
-        var ratingPreloader = loaderObject.AddComponent<RatingPreloader>();
-
-        try
-        {
-            await Task.WhenAll(
-                progressController.PreloadSkillsAsync(),
-                ratingPreloader.PreloadRatingDataAsync()
-            );
-            Debug.Log("[MainMenu] Student data preloaded");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[MainMenu] Preload failed: {ex.Message}");
-        }
-        finally
-        {
-            if (loaderObject != null)
-                Destroy(loaderObject);
-        }
-    }
-
-    public async void OnLoginButtonClick()
-    {
-        if (!ValidateUIComponents()) return;
-
-        // Set loading indicator only if not destroyed
-        if (!isDestroyed && loadingIndicator != null)
-            loadingIndicator.SetActive(true);
-
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        try
-        {
-            //var user = await firebaseManager.AuthenticateUser(loginInput.text, passwordInput.text);
-            //if (user == null)
-            //{
-            //    if (!isDestroyed && errorText != null)
-            //        errorText.text = "Invalid login or password";
-            //    return;
-            //}
-
-            //UserSession.CurrentUser = user;
-            //if (user.Role != "student")
-            //{
-            //    if (!isDestroyed && errorText != null)
-            //        errorText.text = "Access restricted to students";
-            //    UserSession.CurrentUser = null;
-            //    return;
-            //}
-
-            //if (!isDestroyed && errorText != null)
-            //    errorText.text = "";
-            //await Task.WhenAll(
-            //    LoadStudentAvatarAsync(user.Id),
-            //    PreloadStudentDataAsync()
-            //);
-
-            LoadNewsInBackground();
-            await LoadStudentsSceneAsync();
-        }
-        catch (Exception ex)
-        {
-            if (!isDestroyed && errorText != null)
-                errorText.text = "Connection error";
-            Debug.LogError($"[MainMenu] Login failed: {ex.Message}");
-        }
-        finally
-        {
-            // Only access loadingIndicator if not destroyed
-            if (!isDestroyed && loadingIndicator != null)
-                loadingIndicator.SetActive(false);
-            stopwatch.Stop();
-            Debug.Log($"[MainMenu] Login completed in {stopwatch.ElapsedMilliseconds} ms");
-        }
-    }
-
-    private async Task LoadStudentAvatarAsync(string userId)
-    {
-        if (UserSession.CachedAvatar != null)
-        {
-            Debug.Log("[MainMenu] Using cached avatar");
-            return;
-        }
-
-        //byte[] avatarData = await firebaseManager.GetUserAvatar(userId);
-        //if (avatarData != null && avatarData.Length > 0)
-        //{
-        //    Texture2D texture = new Texture2D(2, 2);
-        //    if (texture.LoadImage(avatarData))
-        //        UserSession.CachedAvatar = texture;
-        //    else
-        //        Debug.LogWarning("[MainMenu] Failed to load avatar image");
-        //}
-    }
-
-    private void LoadNewsInBackground()
-    {
-        if (isNewsLoading) return;
-        isNewsLoading = true;
-
-        var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
-        StartCoroutine(LoadNewsCoroutine(vkNewsLoad));
-    }
-
-    private IEnumerator LoadNewsCoroutine(VKNewsLoad vkNewsLoad)
-    {
-        yield return vkNewsLoad.GetNewsFromVK(0, 20);
-
-        if (vkNewsLoad.allPosts != null && vkNewsLoad.groupDictionary != null)
-        {
-            NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
-            NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
-            NewsDataCache.SaveCacheToPersistentStorage();
-            Debug.Log("[MainMenu] News loaded in background");
-        }
-        else
-        {
-            Debug.LogWarning("[MainMenu] Failed to load news");
-        }
-
-        if (vkNewsLoad != null)
-            Destroy(vkNewsLoad);
-        isNewsLoading = false;
-    }
-
-    private async Task LoadStudentsSceneAsync()
-    {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("StudentsScene");
-        if (asyncLoad == null)
-        {
-            Debug.LogError("[MainMenu] Failed to load StudentsScene");
-            return;
-        }
-
-        asyncLoad.allowSceneActivation = false;
-        while (!asyncLoad.isDone)
-        {
-            if (asyncLoad.progress >= 0.3f)
-                asyncLoad.allowSceneActivation = true;
-            await Task.Yield();
-        }
-    }
-
-    public void OnNewsButtonClick()
-    {
-        if (UserSession.CurrentUser == null)
-        {
-            if (!isDestroyed && errorText != null)
-                errorText.text = "Please log in first.";
-            return;
-        }
-
-        if (!isNewsLoading)
-            StartCoroutine(LoadNewsBeforeTransition());
-    }
-
-    private IEnumerator LoadNewsBeforeTransition()
-    {
-        isNewsLoading = true;
-        if (!isDestroyed && loadingIndicator != null)
-            loadingIndicator.SetActive(true);
-
-        var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
-        yield return vkNewsLoad.GetNewsFromVK(0, 20);
-
-        if (vkNewsLoad.allPosts != null && vkNewsLoad.groupDictionary != null)
-        {
-            NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
-            NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
-            NewsDataCache.SaveCacheToPersistentStorage();
-            Debug.Log("[MainMenu] News loaded successfully");
-        }
-        else
-        {
-            if (!isDestroyed && errorText != null)
-                errorText.text = "News loading error";
-            Debug.LogError("[MainMenu] Failed to load news");
-        }
-
-        yield return StartCoroutine(LoadStudentsSceneCoroutine());
-
-        if (!isDestroyed && loadingIndicator != null)
-            loadingIndicator.SetActive(false);
-        isNewsLoading = false;
-        if (vkNewsLoad != null)
-            Destroy(vkNewsLoad);
-    }
-
-    private IEnumerator LoadStudentsSceneCoroutine()
-    {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("StudentsScene");
-        if (asyncLoad == null)
-        {
-            Debug.LogError("[MainMenu] Failed to load StudentsScene");
-            yield break;
-        }
-
-        asyncLoad.allowSceneActivation = false;
-        while (!asyncLoad.isDone)
-        {
-            if (asyncLoad.progress >= 0.3f)
-                asyncLoad.allowSceneActivation = true;
-            yield return null;
-        }
-    }
-
-    public void OnLogoutButtonClick()
-    {
-        UserSession.ClearSession();
-        SceneManager.LoadScene("MainScene");
-    }
-
-    public void OnRegButtonClick()
-    {
-        Debug.Log("[MainMenu] Clearing session");
-        UserSession.ClearSession();
-        Debug.Log("[MainMenu] Session cleared, starting async load of StRegistr");
-        StartCoroutine(LoadStRegistrSceneAsync());
-    }
-
-    private IEnumerator LoadStRegistrSceneAsync()
-    {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync("StRegistr");
-        if (asyncLoad == null)
-        {
-            Debug.LogError("[MainMenu] Failed to start loading StRegistr scene");
-            yield break;
-        }
-
-        asyncLoad.allowSceneActivation = false;
-        while (!asyncLoad.isDone)
-        {
-            Debug.Log($"[MainMenu] Loading progress: {asyncLoad.progress}");
-            if (asyncLoad.progress >= 0.9f)
-            {
-                asyncLoad.allowSceneActivation = true;
-                Debug.Log("[MainMenu] Allowing scene activation");
-            }
-            yield return null;
-        }
-        Debug.Log("[MainMenu] StRegistr scene loaded");
-
-        GameObject canvas = GameObject.Find("Canvas");
-        if (canvas != null)
-        {
-            Debug.Log("[MainMenu] Canvas found in scene after loading");
-        }
-        else
-        {
-            Debug.LogError("[MainMenu] Canvas NOT found in scene after loading");
-        }
+        // Clean up event listeners
+        emailInput.onValueChanged.RemoveAllListeners();
+        passwordInput.onValueChanged.RemoveAllListeners();
+        loginButton.onClick.RemoveAllListeners();
+        registerButton.onClick.RemoveAllListeners();
+        forgotPasswordButton.onClick.RemoveAllListeners();
     }
 }

@@ -47,14 +47,14 @@ public class GameOverLinux : MonoBehaviour
     {
         try
         {
-            string studentId = UserSession.CurrentUser.Id;
+            //string studentId = UserSession.CurrentUser.Id;
             string gameName = "LinuxQuiz";
             string timestamp = System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             // Сохраняем результат игры
             var gameResult = new Dictionary<string, object>
             {
-                {"student_id", studentId},
+                //{"student_id", studentId},
                 {"game_name", gameName},
                 {"score", score},
                 {"time", time},
@@ -69,7 +69,7 @@ public class GameOverLinux : MonoBehaviour
             //    .SetValueAsync(gameResult);
 
             // Обновляем общий счет студента
-            await UpdateStudentTotalScore(studentId, score);
+            //await UpdateStudentTotalScore(studentId, score);
         }
         catch (System.Exception ex)
         {

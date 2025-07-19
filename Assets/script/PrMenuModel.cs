@@ -29,11 +29,11 @@ public class PrMenuModel : MonoBehaviour
 
         //await firebaseManager.Initialize();
 
-        if (UserSession.CurrentUser != null && UserSession.CurrentUser.Role == "teacher")
-        {
-            Debug.Log($"[PrMenuModel] Текущий пользователь: {UserSession.CurrentUser.Username}");
-            StartCoroutine(LoadNewsInBackground());
-        }
+        //if (UserSession.CurrentUser != null && UserSession.CurrentUser.Role == "teacher")
+        //{
+        //    Debug.Log($"[PrMenuModel] Текущий пользователь: {UserSession.CurrentUser.Username}");
+        //    StartCoroutine(LoadNewsInBackground());
+        //}
     }
 
     private void OnDestroy()

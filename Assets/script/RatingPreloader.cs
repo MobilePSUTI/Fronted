@@ -20,7 +20,7 @@ public class RatingPreloader : MonoBehaviour
 
         try
         {
-            var allUsers = new List<UserSession.UserRatingData>();
+            //var allUsers = new List<UserSession.UserRatingData>();
             //DataSnapshot usersSnapshot = await FirebaseDatabase.DefaultInstance
             //    .GetReference("14/data")
             //    .GetValueAsync();

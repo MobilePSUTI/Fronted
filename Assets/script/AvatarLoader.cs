@@ -29,7 +29,7 @@ public class AvatarLoader : MonoBehaviour
             }
             else
             {
-                LoadAvatar(UserSession.CurrentUser.Id);
+                //LoadAvatar(UserSession.CurrentUser.Id);
             }
         }
         else

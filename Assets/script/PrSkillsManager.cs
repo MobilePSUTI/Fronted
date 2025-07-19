@@ -30,19 +30,19 @@ public class PrSkillsManager : MonoBehaviour
 
     public async Task Initialize()
     {
-        if (UserSession.CurrentUser == null || UserSession.CurrentUser.Role != "teacher")
+        if (UserSession.CurrentUser == null || UserSession.CurrentUser.role != "teacher")
         {
             Debug.LogError("No teacher logged in!");
             return;
         }
-        if (UserSession.SelectedStudent == null)
-        {
-            Debug.LogError("No student selected!");
-            return;
-        }
+        //if (UserSession.SelectedStudent == null)
+        //{
+        //    Debug.LogError("No student selected!");
+        //    return;
+        //}
 
-        currentTeacherId = UserSession.CurrentUser.Id;
-        currentStudent = UserSession.SelectedStudent;
+        currentTeacherId = UserSession.CurrentUser.id;
+        //currentStudent = UserSession.SelectedStudent;
 
         if (string.IsNullOrEmpty(currentStudent.GroupId))
         {

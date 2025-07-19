@@ -63,7 +63,6 @@
   <ItemGroup>
     <Compile Include="Assets\script\GameEnglish\PauseManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
-    <Compile Include="Assets\script\DatabaseManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\script\GameEnglish\EnemySpawner.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
@@ -73,6 +72,7 @@
     <Compile Include="Assets\script\portfolio\FileListItem.cs" />
     <Compile Include="Assets\script\GameStMl\FacultySelector.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
+    <Compile Include="Assets\script\ApiClient.cs" />
     <Compile Include="Assets\script\Group.cs" />
     <Compile Include="Assets\script\GameLinux\GameSession.cs" />
     <Compile Include="Assets\script\PrSkillsManager.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="Assets\script\News\NewsDataCache.cs" />
     <Compile Include="Assets\script\portfolio\AdvancedFileUploader.cs" />
     <Compile Include="Assets\script\AppManager.cs" />
+    <Compile Include="Assets\script\Panel\SettingsManager.cs" />
     <Compile Include="Assets\script\ButtonTwoManager.cs" />
     <Compile Include="Assets\script\News\NewsSceneManager.cs" />
     <Compile Include="Assets\script\ButtonHighlight.cs" />
@@ -113,8 +114,10 @@
     <Compile Include="Assets\script\AvatarLoader.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\script\MainMenu.cs" />
+    <Compile Include="Assets\script\Panel\SettingsButton.cs" />
     <Compile Include="Assets\script\GameEnglish\PlayerController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
+    <Compile Include="Assets\script\Panel\NotificationManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\script\GameEnglish\GameOver\GameOverController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
@@ -132,6 +135,7 @@
     <Compile Include="Assets\script\TotalCoinDisplay.cs" />
     <Compile Include="Assets\script\StudentProgressController.cs" />
     <Compile Include="Assets\script\SceneLoader.cs" />
+    <Compile Include="Assets\script\Panel\NotificationButton.cs" />
     <Compile Include="Assets\script\Panel\ClosePanel.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
@@ -143,7 +147,6 @@
     <Compile Include="Assets\script\GameLinux\LinuxGameOverController.cs" />
     <Compile Include="Assets\script\GameEnglish\EnemyController.cs" />
     <Compile Include="Assets\script\GameLinux\SafeArea.cs" />
-    <Compile Include="Assets\script\FirebaseDBManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
     <Compile Include="Assets\script\GameEnglish\GameOver\GameDataTransfer.cs" />
@@ -1291,16 +1294,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.PlasticSCM.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.2D.Aseprite.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Aseprite.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Multiplayer.Center.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Multiplayer.Center.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.PlasticSCM.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.PlasticSCM.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.AdaptivePerformance.Simulator.Extension">
@@ -1327,12 +1330,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.AdaptivePerformance.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.2D.Animation.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.2D.Animation.Editor.dll</HintPath>
+    <Reference Include="NativeFilePicker.Editor">
+      <HintPath>Library\ScriptAssemblies\NativeFilePicker.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.InternalAPIEditorBridge.001">
-      <HintPath>Library\ScriptAssemblies\Unity.InternalAPIEditorBridge.001.dll</HintPath>
+    <Reference Include="Unity.2D.Animation.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.2D.Animation.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Collections">
@@ -1343,8 +1346,8 @@
       <HintPath>Library\ScriptAssemblies\PPv2URPConverters.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="NativeFilePicker.Editor">
-      <HintPath>Library\ScriptAssemblies\NativeFilePicker.Editor.dll</HintPath>
+    <Reference Include="Unity.InternalAPIEditorBridge.001">
+      <HintPath>Library\ScriptAssemblies\Unity.InternalAPIEditorBridge.001.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.ProBuilder.Editor">
