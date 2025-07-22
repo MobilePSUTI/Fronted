@@ -2795,6 +2795,7 @@ GameObject:
   - component: {fileID: 869794965}
   - component: {fileID: 869794964}
   - component: {fileID: 869794963}
+  - component: {fileID: 869794966}
   m_Layer: 5
   m_Name: notifications
   m_TagString: Untagged
@@ -2864,7 +2865,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 869794964}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 869794966}
+        m_TargetAssemblyTypeName: NotificationButton, Assembly-CSharp
+        m_MethodName: OnNotificationClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &869794964
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2903,6 +2916,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 869794961}
   m_CullTransparentMesh: 1
+--- !u!114 &869794966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869794961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4df312f6902cfb1499406de5a0219d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &887631255
 GameObject:
   m_ObjectHideFlags: 0
@@ -4952,7 +4977,7 @@ GameObject:
   - component: {fileID: 1563789640}
   - component: {fileID: 1563789639}
   - component: {fileID: 1563789638}
-  - component: {fileID: 1563789637}
+  - component: {fileID: 1563789641}
   m_Layer: 5
   m_Name: settings
   m_TagString: Untagged
@@ -4979,19 +5004,6 @@ RectTransform:
   m_AnchoredPosition: {x: -327.1398, y: -132.77002}
   m_SizeDelta: {x: 107.08, y: 83.13}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1563789637
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1563789635}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15190d035967abf4b88fb0e83d8d794e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Panel: {fileID: 0}
 --- !u!114 &1563789638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5035,7 +5047,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1563789639}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1563789641}
+        m_TargetAssemblyTypeName: SettingsButton, Assembly-CSharp
+        m_MethodName: OnSettingsClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1563789639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5074,6 +5098,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1563789635}
   m_CullTransparentMesh: 1
+--- !u!114 &1563789641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1563789635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b3a4a6f48b6c374da69d46c98012ccd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1568279246
 GameObject:
   m_ObjectHideFlags: 0
