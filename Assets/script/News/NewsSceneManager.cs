@@ -12,6 +12,7 @@ public class NewsSceneManager : MonoBehaviour
     [SerializeField] private Transform newsContainer;
     [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private GameObject loadingIndicator;
+    [SerializeField] private TMP_Dropdown groupFilterDropdown;
 
     private const string NewsItemWithPhotoPrefabPath = "Panel_news";
     private const string NewsItemWithoutPhotoPrefabPath = "Panel_news_netPhoto";
@@ -32,6 +33,8 @@ public class NewsSceneManager : MonoBehaviour
     {
         if (!ValidateComponents()) return;
 
+        groupFilterDropdown.onValueChanged.AddListener(OnGroupFilterChanged);
+
         lastUpdateTime = DateTime.Now;
         newsItemWithPhotoPrefab = Resources.Load<GameObject>(NewsItemWithPhotoPrefabPath);
         newsItemWithoutPhotoPrefab = Resources.Load<GameObject>(NewsItemWithoutPhotoPrefabPath);
@@ -44,6 +47,23 @@ public class NewsSceneManager : MonoBehaviour
             StartCoroutine(DisplayCachedNews());
 
         StartCoroutine(LoadNewsAndDisplay());
+    }
+
+    private void OnGroupFilterChanged(int index)
+    {
+        if (index == 0) // "Все новости"
+        {
+            StartCoroutine(DisplayNews(NewsDataCache.CachedPosts, NewsDataCache.CachedVKGroups));
+        }
+        else
+        {
+            var selectedGroupId = groupFilterDropdown.options[index].text;
+            var filteredPosts = NewsDataCache.CachedPosts.FindAll(post =>
+                NewsDataCache.CachedVKGroups.ContainsKey(-post.owner_id) &&
+                NewsDataCache.CachedVKGroups[-post.owner_id].name == selectedGroupId);
+
+            StartCoroutine(DisplayNews(filteredPosts, NewsDataCache.CachedVKGroups));
+        }
     }
 
     private bool ValidateComponents()
@@ -93,6 +113,9 @@ public class NewsSceneManager : MonoBehaviour
             NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
             NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
             NewsDataCache.SaveCacheToPersistentStorage();
+
+            UpdateGroupFilterDropdown(vkNewsLoad.groupDictionary);
+
             yield return StartCoroutine(DisplayNews(vkNewsLoad.allPosts, vkNewsLoad.groupDictionary));
         }
         else
@@ -103,6 +126,22 @@ public class NewsSceneManager : MonoBehaviour
         loadingIndicator.SetActive(false);
         if (vkNewsLoad != null)
             Destroy(vkNewsLoad);
+    }
+
+    private void UpdateGroupFilterDropdown(Dictionary<long, VKGroup> groups)
+    {
+        groupFilterDropdown.ClearOptions();
+
+        // Добавляем опцию "Все новости"
+        var options = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("Все новости") };
+
+        // Добавляем группы из словаря
+        foreach (var group in groups.Values)
+        {
+            options.Add(new TMP_Dropdown.OptionData(group.name));
+        }
+
+        groupFilterDropdown.AddOptions(options);
     }
 
     private IEnumerator DisplayCachedNews()
