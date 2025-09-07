@@ -19,6 +19,18 @@ public static class NewsDataCache
         set => _cachedVKGroups = value ?? new Dictionary<long, VKGroup>();
     }
 
+    public static int CachedFilterIndex
+    {
+        get => PlayerPrefs.GetInt("CachedFilterIndex", 0);
+        set => PlayerPrefs.SetInt("CachedFilterIndex", value);
+    }
+
+    public static float CachedScrollPosition
+    {
+        get => PlayerPrefs.GetFloat("CachedScrollPosition", 1f);
+        set => PlayerPrefs.SetFloat("CachedScrollPosition", value);
+    }
+
     public static void SaveCacheToPersistentStorage()
     {
         try
@@ -50,6 +62,8 @@ public static class NewsDataCache
         _cachedVKGroups.Clear();
         PlayerPrefs.DeleteKey("CachedPosts");
         PlayerPrefs.DeleteKey("CachedVKGroups");
+        PlayerPrefs.DeleteKey("CachedFilterIndex");
+        PlayerPrefs.DeleteKey("CachedScrollPosition");
         PlayerPrefs.Save();
         Debug.Log("[NewsDataCache] Cache cleared");
     }

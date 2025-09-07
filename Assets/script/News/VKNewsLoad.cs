@@ -75,7 +75,7 @@ public class VKNewsLoad : MonoBehaviour
             Debug.LogWarning("[VKNewsLoad] GroupIds list is empty. Please add valid VK group IDs in the Inspector.");
     }
 
-    public IEnumerator GetNewsFromVK(int offset = 0, int count = 20)
+    public IEnumerator GetNewsFromVK(int offset = 0, int count = 5)
     {
         if (string.IsNullOrEmpty(accessToken))
         {
@@ -97,7 +97,8 @@ public class VKNewsLoad : MonoBehaviour
             bool success = false;
             for (int attempt = 1; attempt <= MaxRetries; attempt++)
             {
-                string url = $"https://api.vk.com/method/wall.get?owner_id=-{groupId}&access_token={accessToken}&v=5.199&count={count}&offset={offset}&extended=1";
+                //string url = $"https://api.vk.com/method/wall.get?owner_id=-{groupId}&access_token={accessToken}&v=5.199&count={count}&offset={offset}&extended=1";
+                string url = $"https://api.vk.com/method/wall.get?owner_id=-{groupId}&access_token={accessToken}&v=5.199&count=5&extended=1";
                 using UnityWebRequest request = UnityWebRequest.Get(url);
                 request.timeout = 10;
 

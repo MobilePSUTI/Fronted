@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -11,8 +11,8 @@ public class NewsSceneManager : MonoBehaviour
 {
     [SerializeField] private Transform newsContainer;
     [SerializeField] private ScrollRect scrollRect;
-    [SerializeField] private GameObject loadingIndicator;
     [SerializeField] private TMP_Dropdown groupFilterDropdown;
+    [SerializeField] private GameObject refreshIndicator;
 
     private const string NewsItemWithPhotoPrefabPath = "Panel_news";
     private const string NewsItemWithoutPhotoPrefabPath = "Panel_news_netPhoto";
@@ -28,6 +28,9 @@ public class NewsSceneManager : MonoBehaviour
     private GameObject newsItemPhotoOnlyPrefab;
     private Queue<GameObject> newsItemPool = new Queue<GameObject>();
     private Vector2 touchPosition;
+    private Dictionary<string, long> groupNameToIdMap = new Dictionary<string, long>();
+    private int currentFilterIndex = 0;
+    private float savedScrollPosition = 1f;
 
     private void Start()
     {
@@ -42,7 +45,10 @@ public class NewsSceneManager : MonoBehaviour
 
         if (!ValidatePrefabs()) return;
 
-        loadingIndicator.SetActive(true);
+        // Восстанавливаем сохраненный фильтр и позицию скролла
+        currentFilterIndex = NewsDataCache.CachedFilterIndex;
+        savedScrollPosition = NewsDataCache.CachedScrollPosition;
+
         if (NewsDataCache.CachedPosts.Count > 0 && NewsDataCache.CachedVKGroups.Count > 0)
             StartCoroutine(DisplayCachedNews());
 
@@ -51,26 +57,72 @@ public class NewsSceneManager : MonoBehaviour
 
     private void OnGroupFilterChanged(int index)
     {
-        if (index == 0) // "��� �������"
+        // Сохраняем выбранный фильтр
+        currentFilterIndex = index;
+        NewsDataCache.CachedFilterIndex = index;
+
+        // Сохраняем позицию скролла перед применением фильтра
+        SaveScrollPosition();
+
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var filteredPosts = new List<Post>(NewsDataCache.CachedPosts);
+
+        // Проверяем, что индекс фильтра валиден
+        if (groupFilterDropdown.options.Count > 0 &&
+            currentFilterIndex >= 0 &&
+            currentFilterIndex < groupFilterDropdown.options.Count)
         {
-            StartCoroutine(DisplayNews(NewsDataCache.CachedPosts, NewsDataCache.CachedVKGroups));
+            // Фильтр по группе
+            if (currentFilterIndex > 0) // Не "Все новости"
+            {
+                var selectedGroupName = groupFilterDropdown.options[currentFilterIndex].text;
+                if (groupNameToIdMap.ContainsKey(selectedGroupName))
+                {
+                    long groupId = groupNameToIdMap[selectedGroupName];
+                    filteredPosts = filteredPosts.FindAll(post => -post.owner_id == groupId);
+
+                    // Автоматически фильтруем по текущему месяцу при выборе группы
+                    DateTime currentDate = DateTime.Now;
+                    filteredPosts = filteredPosts.FindAll(post =>
+                        IsPostInCurrentMonth(post, currentDate));
+                }
+            }
         }
         else
         {
-            var selectedGroupId = groupFilterDropdown.options[index].text;
-            var filteredPosts = NewsDataCache.CachedPosts.FindAll(post =>
-                NewsDataCache.CachedVKGroups.ContainsKey(-post.owner_id) &&
-                NewsDataCache.CachedVKGroups[-post.owner_id].name == selectedGroupId);
+            // Если индекс невалиден, сбрасываем на "Все новости"
+            currentFilterIndex = 0;
+            groupFilterDropdown.value = 0;
+        }
 
-            StartCoroutine(DisplayNews(filteredPosts, NewsDataCache.CachedVKGroups));
+        StartCoroutine(DisplayNews(filteredPosts, NewsDataCache.CachedVKGroups));
+    }
+
+    private bool IsPostInCurrentMonth(Post post, DateTime currentDate)
+    {
+        if (!IsValidUnixTimestamp(post.date)) return false;
+
+        try
+        {
+            DateTime postDate = DateTimeOffset.FromUnixTimeSeconds(post.date).LocalDateTime;
+            return postDate.Year == currentDate.Year && postDate.Month == currentDate.Month;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[NewsScene] Error checking month filter: {ex.Message}");
+            return false;
         }
     }
 
     private bool ValidateComponents()
     {
-        if (newsContainer == null || scrollRect == null || loadingIndicator == null)
+        if (newsContainer == null || scrollRect == null || groupFilterDropdown == null)
         {
-            Debug.LogError("[NewsScene] Missing UI components: newsContainer, scrollRect, or loadingIndicator");
+            Debug.LogError("[NewsScene] Missing UI components");
             return false;
         }
         return true;
@@ -105,7 +157,6 @@ public class NewsSceneManager : MonoBehaviour
     private IEnumerator LoadNewsAndDisplay()
     {
         var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
-        // No need to assign vkSettings; configure accessToken and groupIds in Inspector
         yield return vkNewsLoad.GetNewsFromVK(0, 20);
 
         if (vkNewsLoad.allPosts != null && vkNewsLoad.groupDictionary != null)
@@ -116,14 +167,20 @@ public class NewsSceneManager : MonoBehaviour
 
             UpdateGroupFilterDropdown(vkNewsLoad.groupDictionary);
 
-            yield return StartCoroutine(DisplayNews(vkNewsLoad.allPosts, vkNewsLoad.groupDictionary));
+            // Восстанавливаем сохраненный фильтр в dropdown
+            groupFilterDropdown.value = currentFilterIndex;
+
+            // Применяем фильтрацию с сохраненным фильтром
+            ApplyFilters();
+
+            // Восстанавливаем позицию скролла после загрузки
+            RestoreScrollPosition();
         }
         else
         {
             Debug.LogError("[NewsScene] Failed to load news from VK");
         }
 
-        loadingIndicator.SetActive(false);
         if (vkNewsLoad != null)
             Destroy(vkNewsLoad);
     }
@@ -131,23 +188,31 @@ public class NewsSceneManager : MonoBehaviour
     private void UpdateGroupFilterDropdown(Dictionary<long, VKGroup> groups)
     {
         groupFilterDropdown.ClearOptions();
+        groupNameToIdMap.Clear();
 
-        // ��������� ����� "��� �������"
-        var options = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("��� �������") };
+        // Добавляем опцию "Все новости"
+        var groupOptions = new List<TMP_Dropdown.OptionData> { new TMP_Dropdown.OptionData("Все новости") };
 
-        // ��������� ������ �� �������
+        // Добавляем группы из словаря
         foreach (var group in groups.Values)
         {
-            options.Add(new TMP_Dropdown.OptionData(group.name));
+            // Добавляем эмодзи календаря и текст "текущий месяц" к названию группы
+            string groupNameWithMonth = $"{group.name} 📅 текущий месяц";
+            groupOptions.Add(new TMP_Dropdown.OptionData(groupNameWithMonth));
+            groupNameToIdMap[groupNameWithMonth] = group.id;
         }
 
-        groupFilterDropdown.AddOptions(options);
+        groupFilterDropdown.AddOptions(groupOptions);
     }
 
     private IEnumerator DisplayCachedNews()
     {
+        // Восстанавливаем фильтр при отображении кэшированных данных
+        groupFilterDropdown.value = currentFilterIndex;
         yield return StartCoroutine(DisplayNews(NewsDataCache.CachedPosts, NewsDataCache.CachedVKGroups));
-        loadingIndicator.SetActive(false);
+
+        // Восстанавливаем позицию скролла после отображения
+        RestoreScrollPosition();
     }
 
     private IEnumerator DisplayNews(List<Post> posts, Dictionary<long, VKGroup> groups)
@@ -202,8 +267,15 @@ public class NewsSceneManager : MonoBehaviour
         if (isUpdating) yield break;
         isUpdating = true;
 
+        // Показываем индикатор обновления
+        if (refreshIndicator != null)
+            refreshIndicator.SetActive(true);
+
+        // Сохраняем текущий индекс фильтра и позицию скролла перед обновлением
+        int savedFilterIndex = groupFilterDropdown.value;
+        SaveScrollPosition();
+
         var vkNewsLoad = gameObject.AddComponent<VKNewsLoad>();
-        // No need to assign vkSettings; configure accessToken and groupIds in Inspector
         yield return vkNewsLoad.GetNewsFromVK(0, 20);
 
         if (vkNewsLoad.allPosts != null && vkNewsLoad.groupDictionary != null)
@@ -212,7 +284,19 @@ public class NewsSceneManager : MonoBehaviour
             NewsDataCache.CachedPosts = vkNewsLoad.allPosts;
             NewsDataCache.CachedVKGroups = vkNewsLoad.groupDictionary;
             NewsDataCache.SaveCacheToPersistentStorage();
-            yield return StartCoroutine(DisplayNews(vkNewsLoad.allPosts, vkNewsLoad.groupDictionary));
+
+            UpdateGroupFilterDropdown(vkNewsLoad.groupDictionary);
+
+            // Восстанавливаем фильтр после обновления
+            groupFilterDropdown.value = savedFilterIndex;
+            currentFilterIndex = savedFilterIndex;
+            NewsDataCache.CachedFilterIndex = savedFilterIndex;
+
+            // Применяем фильтрацию
+            ApplyFilters();
+
+            // Восстанавливаем позицию скролла
+            RestoreScrollPosition();
         }
         else
         {
@@ -221,6 +305,11 @@ public class NewsSceneManager : MonoBehaviour
 
         if (vkNewsLoad != null)
             Destroy(vkNewsLoad);
+
+        // Скрываем индикатор обновления
+        if (refreshIndicator != null)
+            refreshIndicator.SetActive(false);
+
         isUpdating = false;
     }
 
@@ -384,5 +473,16 @@ public class NewsSceneManager : MonoBehaviour
         GameObject newsItem = Instantiate(prefab, newsContainer);
         newsItemPool.Enqueue(newsItem);
         return newsItem;
+    }
+
+    private void SaveScrollPosition()
+    {
+        savedScrollPosition = scrollRect.verticalNormalizedPosition;
+        NewsDataCache.CachedScrollPosition = savedScrollPosition;
+    }
+
+    private void RestoreScrollPosition()
+    {
+        scrollRect.verticalNormalizedPosition = savedScrollPosition;
     }
 }
